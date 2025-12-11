@@ -1,14 +1,13 @@
-library(vmisc)
-source("indices.R")
-source("series_utils.R")
+library(tidyverse)
+vmisc::load_all2("specter")
 
 
-d <- read_csv("df35b.233.1-DATA.csv") %>% 
+d <- read_csv("raw_data/df35b.233.1-DATA.csv") %>% 
   rename_all(tolower) 
-d_taxa <- read_csv("df35b.236.1-DATA.csv") %>% 
+d_taxa <- read_csv("raw_data/df35b.236.1-DATA.csv") %>% 
   rename_all(tolower) %>% 
   dplyr::select(-notes)
-d_meta <- read_csv("df35b.234.1-DATA.csv") %>% 
+d_meta <- read_csv("raw_data/df35b.234.1-DATA.csv") %>% 
   rename_all(tolower) %>% 
   left_join(d_taxa) %>% 
   mutate(
@@ -26,7 +25,7 @@ d %>%
   ) %>% 
   summarise(
     obj = list(
-      make_series(x = sampleyear, y = population, ID = series_id)
+      series_make(x = sampleyear, y = population, ID = series_id)
     )
   ) %>% 
   assign_chunk() %>% 
@@ -39,9 +38,7 @@ d %>%
   .$chunk %>%
   vmisc::pb_par_lapply(
     function(x){
-      source("indices.R")
-      source("series_utils.R")
-      lapply(x, pipeline_wrapper) %>% 
+      lapply(x, find_splitted_attributes) %>% 
         do.call("rbind", .)
     }, cores = 8, inorder = FALSE
   ) %>% 
@@ -81,7 +78,7 @@ allowed_class <- c(
 
 m <- glmmTMB(
   mean_freq ~ 
-    x_median_offset:taxonomicclass + 
+    x_median_offset + 
     scale(x_median_mean) +
     scale(x_length_offset) +
     scale(x_length_mean) +
@@ -109,6 +106,9 @@ m <- glmmTMB(
       x_median_offset = x_median - x_median_mean
     ) %>% 
     ungroup() %>% 
+    filter(
+      p_nm > 0.8 & x_length > 5
+    ) %>% 
     # filter(
     #   p_nm == 1
     # ) %>% 

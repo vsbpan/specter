@@ -1,4 +1,3 @@
-
 find_series_vars <- function(y, index = c("mean", "var", "cv", "log_mean"), name_append = "y_"){
   y <- y[!is.na(y)]
   lapply(index, function(f){
@@ -66,4 +65,17 @@ find_spectrum_indices <- function(freq, power, index = c("mean_freq", "n_freq", 
     })
   }) %>% 
     setNames(index)
+}
+
+find_splitted_attributes <- function(series){
+  res <- series %>% 
+    series_whole_attr() %>% 
+    series_split() %>% 
+    lapply(function(x){
+      series_calc(x) %>% 
+        collect_attributes()
+    }) %>% 
+    do.call("rbind", .)
+  rownames(res) <- NULL
+  res
 }

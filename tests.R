@@ -1,12 +1,137 @@
-k <- 1
+library(tidyverse)
+vmisc::load_all2("specter")
+
+k <- 10
+N <- 100
+A <- 1
 list(
-  "x" = seq(1, 1000, by = 1), 
-  "y" = sin(seq(1, 1000, by = 1) / k)
+  "x" = seq(1, N, by = 1), 
+  "y" = sin(seq(1, N, by = 1) / k) * A
 ) %>% 
-  rand_drop(p = 0.1) %>% 
-  power_spec()%>% 
+  rand_drop(p = 0.1, set_as_NA = FALSE) %>% 
+  power_spec() %>% 
   with(
     {
       plot(y = power, x = freq)
     }
-  ); lines(x = rep(1/(2 * pi * k), 2), y = c(0, 1000000) )
+  ); segments(x0 = 1/(2 * pi * k), x1 = 1/(2 * pi * k), 
+              y0 = 0, y1 = A^2 * N / 2)
+
+
+
+simulate_one_instance <- function(k, N, p){
+  if((N - ceiling(N * p)) < 4){
+    return(NA_real_)
+  }
+  
+  list(
+    "x" = seq(1, N, by = 1), 
+    "y" = sin(seq(1, N, by = 1) / k)
+  ) %>% 
+    rand_drop(p = p, set_as_NA = FALSE) %>% 
+    power_spec() %>%
+    with(
+      pred_error_score(freq, power, 1/(2 * pi * k))
+    )
+}
+
+
+d_grid <- expand.grid(
+  "k" = 10^seq(-0.5, log10(50 / (2 * pi)), by = 0.05),
+  "N" = seq(4,50), 
+  "p" = seq(0, 0.3, by = 0.1),
+  "rep" = 1:100
+)
+
+d_grid %>%
+  assign_chunk(n_chunks = 320) %>% 
+  group_by(chunk_id) %>% 
+  dplyr::group_split() %>% 
+  vmisc::pb_par_lapply(
+    function(x){
+      res <- apply(x, 1, function(v){
+        simulate_one_instance(
+          k = as.numeric(v["k"]),
+          N = as.numeric(v["N"]),
+          p = as.numeric(v["p"])
+        )
+      }, simplify = FALSE) %>% 
+        do.call("c", .) %>% 
+        unname()
+      
+      cbind(x, "score" = res)
+    }, 
+    cores = 8, 
+    inorder = FALSE
+  ) %>% 
+  do.call("rbind", .) -> d_res2
+
+
+write_csv(d_res2, "cleaned_data/ndft_recovery_simulation.csv")
+
+
+
+
+
+d_res2 <- read_csv("cleaned_data/ndft_recovery_simulation.csv")
+
+
+
+
+d_res2 %>% 
+  group_by(k, N, p) %>% 
+  summarise(
+    score = mean(score, na.rm = TRUE)
+  ) %>% 
+  mutate(
+    freq = 1/(2 * pi * k),
+    include = ifelse(is.na(score), "No", ifelse(abs(score) < 0.1, "Yes", "No"))
+  ) %>% 
+  filter(
+    k < 50 / (2 * pi)
+  ) %>% 
+  ggplot(aes(x = N, y = freq, fill = score)) + 
+  scale_y_log10() + 
+  geom_tile(
+    aes(color = include)
+  ) + 
+  # geom_line(
+  #   aes(
+  #     x = N, y = 1 / N
+  #   )
+  # ) + 
+  geom_line(
+    aes(
+      x = N, y = pmin(0.5, 1 / floor(N * (1 - p)))
+    ),
+    color = "black"
+  ) + 
+  geom_line(
+    aes(x = N, y = 1/2)
+  ) + 
+  facet_wrap(~p) + 
+  scale_color_discrete(
+    type = c("#00000000","grey50")
+  ) + 
+  scale_fill_gradient2(low = "#B2182B", 
+                       mid = "grey80", 
+                       high = "#2166AC") + 
+  theme_minimal() + 
+  theme(
+    strip.background = element_blank()
+  ) 
+
+
+
+
+# Resolution
+# min: 1/N
+# max: 1/2
+
+
+
+
+
+
+
+

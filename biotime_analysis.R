@@ -1,6 +1,5 @@
-library(vmisc)
-source("indices.R")
-source("series_utils.R")
+library(tidyverse)
+vmisc::load_all2("specter")
 # d <- readRDS("biotime_v2_full_2025/biotime_v2_full_2025.rds")
 # 
 # d <- d %>%
@@ -65,7 +64,7 @@ source("series_utils.R")
 # 
 # 
 # saveRDS(d, "Biotime_grouped2.rds")
-d <- readRDS("Biotime_grouped2.rds")
+d <- readRDS("invisible/Biotime_grouped2.rds")
 
 
 # d %>%
@@ -95,8 +94,8 @@ d <- readRDS("Biotime_grouped2.rds")
 # saveRDS(d_res, "Biotime_results.rds")
 
 
-d_res <- readRDS("Biotime_results.rds")
-d_meta <- read_csv("biotime_v2_full_2025/biotime_v2_metadata_2025.csv") %>% 
+d_res <- readRDS("invisible/Biotime_results.rds")
+d_meta <- read_csv("invisible/biotime_v2_full_2025/biotime_v2_metadata_2025.csv") %>% 
   rename_all(tolower) %>% 
   mutate(
     study_id = as.character(study_id)
@@ -159,10 +158,12 @@ m <- glmmTMB(
       x_median_offset = x_median - x_median_mean
     ) %>% 
     filter(
+      p_nm > 0.8 & x_length > 5
+    ) %>% 
+    filter(
       n() == 2
     ) %>% 
     ungroup() %>% 
-    filter(whole_x_length > 30) %>% 
     filter(
       series_id %in% sample(series_id, pmin(10000,length(series_id)), replace = FALSE)
     ), 
