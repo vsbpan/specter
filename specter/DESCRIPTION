@@ -1,0 +1,26 @@
+Package: specter
+Type: Package
+Title: specter project library
+Version: 0.0.1
+Date: 2025-12-11
+Authors@R: 
+    person("Vincent", "Pan", email = "vsbpan@gmail.com",
+             role = c("aut", "cre"), comment = c(ORCID = "0000-0001-9892-7805"))
+Maintainer: Vincent Pan <vsbpan@gmail.com>
+Description: Conding library for specter project for the analysis of time series frequency spectra. Set up as a pseudo package.
+License: GPL (>= 3)
+Depends:
+    vmisc,
+    R (>= 3.5.0)
+Imports:
+    cli, 
+    magrittr
+Suggests:
+    pkgload,
+    rlang,
+    cubature,
+    mFD,
+    lmodel2,
+    cooltools
+RoxygenNote: 7.3.2
+Encoding: UTF-8
