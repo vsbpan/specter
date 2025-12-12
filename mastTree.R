@@ -1,9 +1,8 @@
-library(vmisc)
-source("indices.R")
-source("series_utils.R")
+library(tidyverse)
+vmisc::load_all2("specter")
 
 
-d <- read_csv("MASTREEplus_2024-06-26_V2.csv") %>% 
+d <- read_csv("raw_data/MASTREEplus_2024-06-26_V2.csv") %>% 
   rename_all(tolower) %>% 
   mutate(
     series_id = paste0("series", study_id,"_site",site_number,"_species",species_code,"_varialbe_",variable)
@@ -23,7 +22,7 @@ d %>%
   ) %>% 
   summarise(
     obj = list(
-      make_series(x = year, y = value, ID = series_id)
+      series_make(x = year, y = value, ID = series_id)
     )
   ) %>% 
   assign_chunk() %>% 
@@ -36,9 +35,7 @@ d %>%
   .$chunk %>%
   vmisc::pb_par_lapply(
     function(x){
-      source("indices.R")
-      source("series_utils.R")
-      lapply(x, pipeline_wrapper) %>% 
+      lapply(x, find_splitted_attributes) %>% 
         do.call("rbind", .)
     }, cores = 8, inorder = FALSE
   ) %>% 
@@ -71,11 +68,12 @@ d_cleaned <- d_cleaned %>%
   )
 
 
-
+library(glmmTMB)
 
 m <- glmmTMB(
   mean_freq ~ 
     x_median_offset + 
+    x_median_offset:scale(x_length) + 
     scale(x_median_mean) +
     scale(x_length_offset) +
     scale(x_length_mean) +
@@ -98,6 +96,9 @@ m <- glmmTMB(
       x_median_offset = x_median - x_median_mean
     ) %>% 
     ungroup() %>% 
+    filter(
+      p_nm > 0.8 & x_length > 5
+    ) %>% 
     # filter(
     #   p_nm == 1
     # ) %>% 
@@ -114,13 +115,6 @@ m <- glmmTMB(
   family = Gamma(link = "log")
 ); summary(m)
 
-match_family <- function(genus, taxon = "plant"){
-  df <- rtrees::classifications %>% 
-    dplyr::filter(taxon == taxon)
-  df$family[match(genus, df$genus)]
-}
-
-
 
 
 
@@ -133,12 +127,44 @@ d_cleaned <- d_cleaned %>%
   )
 
 d_cleaned %>% 
+  group_by(ID) %>% 
+  mutate(
+    p_nm = 1 - y_missing / y_n,
+    p_nm_mean = mean(log(p_nm)),
+    p_nm_offset = log(p_nm) - p_nm_mean,
+    x_length_mean = mean(log(x_length)),
+    x_length_offset = log(x_length) - x_length_mean,
+    x_median_mean = mean(x_median),
+    x_median_offset = x_median - x_median_mean
+  ) %>% 
+  ungroup() %>% 
+  filter(
+    p_nm > 0.8 & x_length > 5
+  ) %>% 
+  # filter(
+  #   p_nm == 1
+  # ) %>% 
+  group_by(ID) %>% 
+  #filter(all(n_freq > 0)) %>%
+  filter(
+    n() == 2
+  ) %>% 
+  # filter(
+  #   diff(x_length) == 0
+  # ) %>% 
+  ungroup() %>% 
   arrange(part) %>% 
   group_by(ID) %>% 
   summarise(
-    diff = diff(mean_freq)
+    diff = diff(mean_freq),
+    N = mean(x_length)
   ) %>% 
-  ggplot(aes(x = diff)) + 
+  ggplot(aes(x = N, y = diff)) +
+  geom_point() + 
+  scale_x_log10() + 
+  geom_smooth(method = "lm")
+
+
   geom_histogram(bins = 1000)
 
 

@@ -134,7 +134,8 @@ library(glmmTMB)
 
 m <- glmmTMB(
   mean_freq ~ 
-    x_median_offset + 
+    x_median_offset +
+    x_median_offset:log(x_length) + 
     scale(x_median_mean) +
     scale(x_length_offset) + 
     scale(x_length_mean) +  

@@ -14,6 +14,8 @@ d_meta <- read_csv("raw_data/df35b.234.1-DATA.csv") %>%
     sourcedimension = tolower(sourcedimension)
   )
 
+## Need to throw out morbillivirus
+
 
 d %>% 
   mutate(
@@ -79,14 +81,15 @@ allowed_class <- c(
 m <- glmmTMB(
   mean_freq ~ 
     x_median_offset + 
+    x_median_offset:scale(siblytheta) + 
     scale(x_median_mean) +
     scale(x_length_offset) +
     scale(x_length_mean) +
-    scale(p_nm_mean) +
-    scale(p_nm_offset) +
+    #scale(p_nm_mean) +
+    #scale(p_nm_offset) +
     (1|datasourceid) + 
     (1|taxonomicclass/taxonomicfamily/taxonomicgenus/taxonname) + 
-    (1|ID), 
+    (1 + x_median_offset|ID), 
   data = d_cleaned %>% 
     filter(
       sourcedimension %in% allowed_dimensions
@@ -111,7 +114,7 @@ m <- glmmTMB(
     ) %>% 
     # filter(
     #   p_nm == 1
-    # ) %>% 
+    # ) %>%
     group_by(ID) %>% 
     #filter(all(n_freq > 0)) %>%
     filter(
@@ -119,7 +122,7 @@ m <- glmmTMB(
     ) %>% 
     # filter(
     #   diff(x_length) == 0
-    # ) %>% 
+    # ) %>%
     ungroup(), 
   #control = glmmTMBControl(optimizer = optim, optArgs = list(method = "BFGS")),
   family = Gamma(link = "log")
