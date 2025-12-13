@@ -12,6 +12,9 @@ d <- read_csv("raw_data/MASTREEplus_2024-06-26_V2.csv") %>%
   ) %>% 
   filter(
     ! unit %in% c("index")
+  ) %>% 
+  filter(
+    species != "Mixed species"
   )
 
 
