@@ -1,21 +1,31 @@
 series_gapfill <- function(series) {
+  if(has_error(series)){
+    series$data <- list(
+      "x" = rep(NA_real_, length(series$x)),
+      "y" = rep(NA_real_, length(series$y))
+    )
+    return(series)
+  }
   x <- series$x
   y <- series$y
   xy_na_loc <- is.na(x) | is.na(y)
   x <- x[!xy_na_loc]
   y <- y[!xy_na_loc]
   
-  time_grid <- seq(min(x), max(x), by = 1)
-  
-  y_filled <- rep(NA_real_, length(time_grid))
-  names(y_filled) <- time_grid
-  y_filled[as.character(x)] <- y 
-  y_filled <- unname(y_filled)
-  
-  series$data <- list(
-    "x" = time_grid,
-    "y" = y_filled
-  )
+  if(length(x) < 1){
+    series <- set_error(series, reason = "series is empty")
+  } else {
+    time_grid <- seq(min(x), max(x), by = 1)
+    y_filled <- rep(NA_real_, length(time_grid))
+    names(y_filled) <- time_grid
+    y_filled[as.character(x)] <- y 
+    y_filled <- unname(y_filled)
+    
+    series$data <- list(
+      "x" = time_grid,
+      "y" = y_filled
+    )
+  }
   
   series$x <- x
   series$y <- y
@@ -24,10 +34,18 @@ series_gapfill <- function(series) {
 }
 
 series_transform <- function(series, trans){
-  if(var(series$y, na.rm = TRUE) == 0 || length(series$y) < 3){
-    series <- set_error(series)
+  if(has_error(series)){
     return(series)
   }
+  if(var(series$y, na.rm = TRUE) == 0){
+    series <- set_error(series, reason = "No variance")
+    return(series)
+  }
+  if(length(series$y) < 3){
+    series <- set_error(series, reason = "length(y) < 3")
+    return(series)
+  }
+  
   if(any(series$y < 0)){
     
   } else {
@@ -57,9 +75,12 @@ series_detrend <- function(series){
       NULL
     })
     
-    if(is.null(m) || is.null(m_loess)){
+    if(is.null(m)){
       res <- NA_real_
-      series <- set_error(series)
+      series <- set_error(series, reason = "lm() trend failed")
+    } 
+    if(is.null(m_loess)){
+      series <- set_error(series, reason = "loess() fit failed")
     } else {
       # Linear detrend
       #series$y <- unname(series$y - predict(m, newdata = data.frame("x" = series$x)))
@@ -73,7 +94,7 @@ series_detrend <- function(series){
         }
       )
       if(all(is.na(series$y))){
-        series <- set_error(series)
+        series <- set_error(series, reason = "loess() predict failed")
       }
       res <- unname(stats::coef(m)[2]) 
     }
@@ -93,24 +114,61 @@ series_subset <- function(series, indices){
   series
 }
 
-series_split <- function(series){
-  # Allow attribute inheritance 
-  m <- (median(range(series$x, na.rm = TRUE)))
+series_split <- function(series, method = c("half", "equal_segment"), len = NULL){
   
-  list(
-    "p1" = bind_attributes(
-      series_subset(series, series$x <= (m)), 
-      list(
-        "part" = 1
-      )
-    ),
-    "p2" = bind_attributes(
-      series_subset(series, series$x >= ceiling(m)), 
-      list(
-        "part" = 2
+  method <- match.arg(method)
+  if(method == "equal_segment"){
+    if(is.null(len)){
+      cli::cli_abort("When splitting time series into equal segments, the {.arg len} argument must be supplied.")
+    }
+    if(!isTRUE(len > 0) || len %% 1 != 0){
+      cli::cli_abort("When splitting time series into equal segments, the {.arg len} argument must be a positive integer.")
+    }
+  }
+  
+  
+  if(method == "half"){
+    # Allow attribute inheritance 
+    m <- (median(range(series$x, na.rm = TRUE)))
+    
+    res <- list(
+      "p1" = bind_attributes(
+        series_subset(series, series$x <= (m)), 
+        list(
+          "part" = 1
+        )
+      ),
+      "p2" = bind_attributes(
+        series_subset(series, series$x >= ceiling(m)), 
+        list(
+          "part" = 2
+        )
       )
     )
-  )
+  } else {
+    n <- length(series$x)
+    if(n < len){
+      series <- set_error(series, reason = "series length less than equal_segment len")
+      res <- list(
+        bind_attributes(
+          series,
+          list(
+            "part" = 1
+          )
+        )
+      )
+    } else {
+      res <- lapply(seq_len(floor(n / len)), function(k){
+        bind_attributes(
+          series_subset(series, seq_len(len) + (k - 1) * len),
+          list(
+            "part" = k
+          )
+        )
+      }) 
+    }
+  }
+  return(res)
 }
 
 series_whole_attr <- function(series){
@@ -136,10 +194,13 @@ series_make <- function(x, y, ID){
   if(length(id) != 1){
     cli::cli_abort("Detected more than 1 ID.")
   }
+  if(length(x) != length(y)){
+    cli::cli_abort("{.arg x} and {.arg y} must have the same length.")
+  }
   list(
     "x" = x, 
     "y" = y,
-    "attributes" = list("ID" = id, "error" = FALSE)
+    "attributes" = list("ID" = id, "error" = FALSE, "error_reason" = character(0))
   ) 
 }
 

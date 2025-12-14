@@ -1,34 +1,46 @@
 find_series_vars <- function(y, index = c("mean", "var", "cv", "log_mean"), name_append = "y_"){
   y <- y[!is.na(y)]
-  lapply(index, function(f){
-    f <- match.fun(f)
-    tryCatch({
-      f(y)
-    }, error = function(e){
-      cli::cli_warn(
-        c(e$message, "Returning NAs")
-      )
-      NA_real_
+  
+  if(length(y) < 1){
+    out <- as.list(rep(NA_real_, length(index)))
+  } else {
+    out <- lapply(index, function(f){
+      f <- match.fun(f)
+      tryCatch({
+        f(y)
+      }, error = function(e){
+        cli::cli_warn(
+          c(e$message, "Returning NAs")
+        )
+        NA_real_
+      })
     })
-  }) %>% 
-    setNames(paste0(name_append, index))
+  }
+  
+  setNames(out, paste0(name_append, index))
 }
 
 find_years_vars <- function(x, index = c("min", "max", "median", "length"), name_append = "x_"){
   x <- x[!is.na(x)]
-  x <- seq(min(x), max(x), by = 1)
-  lapply(index, function(f){
-    f <- match.fun(f)
-    tryCatch({
-      f(x)
-    }, error = function(e){
-      cli::cli_warn(
-        c(e$message, "Returning NAs")
-      )
-      NA_real_
+  if(length(x) < 1){
+    out <- as.list(rep(NA_real_, length(index)))
+  } else {
+    x <- seq(min(x), max(x), by = 1)
+    out <- lapply(index, function(f){
+      f <- match.fun(f)
+      tryCatch({
+        f(x)
+      }, error = function(e){
+        cli::cli_warn(
+          c(e$message, "Returning NAs")
+        )
+        NA_real_
+      })
     })
-  }) %>% 
-    setNames(paste0(name_append, index))
+    
+  }
+  
+  setNames(out, paste0(name_append, index))
 }
 
 find_series_sampling <- function(y, name_append = "y_"){
@@ -46,31 +58,28 @@ find_series_sampling <- function(y, name_append = "y_"){
 find_spectrum_indices <- function(freq, power, index = c("mean_freq", "n_freq", "spec_exponent", 
                                                          "freq_diversity", "freq_richness")){
   if(all(is.na(power)) || all(is.na(freq)) || length(power) < 3){
-    return(
-      lapply(index, function(f){
+    out <- as.list(rep(NA_real_, length(index)))
+  } else {
+    out <- lapply(index, function(f){
+      f <- match.fun(f)
+      tryCatch({
+        f(freq, power)
+      }, error = function(e){
+        cli::cli_warn(
+          c(e$message, "Returning NAs")
+        )
         return(NA_real_)
-      }) %>% 
-        setNames(index)
-    )
-  }
-  lapply(index, function(f){
-    f <- match.fun(f)
-    tryCatch({
-      f(freq, power)
-    }, error = function(e){
-      cli::cli_warn(
-        c(e$message, "Returning NAs")
-      )
-      return(NA_real_)
+      })
     })
-  }) %>% 
-    setNames(index)
+  }
+  
+  setNames(out, index)
 }
 
-find_splitted_attributes <- function(series){
+find_splitted_attributes <- function(series, split_method = c("half", "equal_segment"), len = NULL){
   res <- series %>% 
     series_whole_attr() %>% 
-    series_split() %>% 
+    series_split(method = split_method, len = len) %>% 
     lapply(function(x){
       series_calc(x) %>% 
         collect_attributes()

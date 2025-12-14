@@ -80,8 +80,7 @@ allowed_class <- c(
 
 m <- glmmTMB(
   mean_freq ~ 
-    x_median_offset + 
-    x_median_offset:scale(siblytheta) + 
+    x_median_offset +
     scale(x_median_mean) +
     scale(x_length_offset) +
     scale(x_length_mean) +
@@ -89,7 +88,7 @@ m <- glmmTMB(
     #scale(p_nm_offset) +
     (1|datasourceid) + 
     (1|taxonomicclass/taxonomicfamily/taxonomicgenus/taxonname) + 
-    (1 + x_median_offset|ID), 
+    (1|ID), 
   data = d_cleaned %>% 
     filter(
       sourcedimension %in% allowed_dimensions
@@ -129,6 +128,63 @@ m <- glmmTMB(
 ); summary(m)
 
 
+m <- gamm4::gamm4(
+  mean_freq ~ 
+    s(x_median_mean, by = x_median_offset, k = -1, bs = "tp") + 
+    #s(scale(x_length_mean), by = x_median_offset, k = 5, bs = "tp") + 
+    scale(x_median_mean) +  
+    #scale(x_length_offset) +
+    scale(x_length_mean),
+  random = ~ (1|datasourceid) + 
+    (1|taxonomicclass) + 
+    (1|ID),
+  family = Gamma(link = "log"),
+  data = w %>% 
+    filter(
+      x_median_mean > 1900
+    )
+); summary(m)
+
+m$gam %>% plot()
+summary(m$gam)
+
+d_cleaned %>% 
+  filter(
+    sourcedimension %in% allowed_dimensions
+  ) %>% 
+  group_by(ID) %>% 
+  mutate(
+    p_nm = 1 - y_missing / y_n,
+    p_nm_mean = mean(log(p_nm)),
+    p_nm_offset = log(p_nm) - p_nm_mean,
+    x_length_mean = mean(log(x_length)),
+    x_length_offset = log(x_length) - x_length_mean,
+    y_cv_mean = mean(log(y_cv)),
+    y_cv_offset = log(y_cv) - y_cv_mean,
+    trend_mean = mean(trend),
+    trend_offset = trend - trend_mean,
+    x_median_mean = mean(x_median),
+    x_median_offset = x_median - x_median_mean
+  ) %>% 
+  ungroup() %>% 
+  filter(
+    p_nm > 0.8 & x_length > 5
+  ) %>% 
+  # filter(
+  #   p_nm == 1
+  # ) %>%
+  group_by(ID) %>% 
+  #filter(all(n_freq > 0)) %>%
+  filter(
+    n() == 2
+  ) %>% 
+  # filter(
+  #   diff(x_length) == 0
+  # ) %>%
+  ungroup() %>% 
+  mutate_at(
+    .vars = vars(ID, taxonomicclass,datasourceid), as.factor
+  ) -> w
 
 
 
