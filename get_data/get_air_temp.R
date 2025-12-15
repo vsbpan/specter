@@ -2,10 +2,12 @@ library(tidyverse)
 vmisc::load_all2("specter")
 library(terra)
 
+# NOAA/CIRES/DOE 20th Century Reanalysis (V3)
 # https://psl.noaa.gov/data/gridded/data.20thC_ReanV3.html
-rast <- terra::rast("invisible/air.2m.mon.mean.nc")
+# /Datasets/20thC_ReanV3/Monthlies/2mSI-MO/air.2m.mon.mean.nc
+rast <- terra::rast("invisible/raw_rast/air.2m.mon.mean.nc")
 
-yr <- lubridate::year(time(rast))
+yr <- lubridate::year(terra::time(rast))
 
 # compute geometric mean at each cell for each year
 foo <- terra::tapp(rast, index = yr, 
@@ -15,15 +17,32 @@ foo <- terra::tapp(rast, index = yr,
 
 
 
-terra::names(foo) <- paste0("air_", unique(yr))
+names(foo) <- paste0("air_", unique(yr))
 terra::time(foo) <- as.POSIXct(paste0(unique(yr), "-01-01"), tz = "UTC")
 terra::units(foo) <- rep(unique(terra::units(rast)), terra::nlyr(foo))
 terra::varnames(foo) <- "air (Annual Air Temperature at 2 m)"
 
 
-terra::writeCDF(foo, "cleaned_data/annual_air_temperature.nc")
+terra::writeCDF(foo, "cleaned_data/annual_air_temperature_20th_century_reanalysis.nc")
 
 
+# GHCN_CAMS Gridded 2m Temperature (Land)
+# https://psl.noaa.gov/data/gridded/data.ghcncams.html
+# /Datasets/ghcncams/air.mon.mean.nc
+rast <- terra::rast("invisible/raw_rast/air.mon.mean.nc")
+yr <- lubridate::year(terra::time(rast))
+foo <- terra::tapp(rast, index = yr, 
+                   fun = function(x){
+                     exp(mean(log(x)))
+                   })
 
+
+names(foo) <- paste0("air_", unique(yr))
+terra::time(foo) <- as.POSIXct(paste0(unique(yr), "-01-01"), tz = "UTC")
+terra::units(foo) <- rep(unique(terra::units(rast)), terra::nlyr(foo))
+terra::varnames(foo) <- "air (Annual Air Temperature at 2 m)"
+foo <- terra::subset(foo, -terra::nlyr(foo)) # Drop 2025 bc data is incomplete
+
+terra::writeCDF(foo, "cleaned_data/annual_air_temperature_GHCN_CAMS.nc")
 
 
