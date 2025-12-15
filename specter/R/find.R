@@ -56,7 +56,8 @@ find_series_sampling <- function(y, name_append = "y_"){
 }
 
 find_spectrum_indices <- function(freq, power, index = c("mean_freq", "n_freq", "spec_exponent", 
-                                                         "freq_diversity", "freq_richness")){
+                                                         "freq_diversity", "freq_richness"),
+                                  name_append = NULL){
   if(all(is.na(power)) || all(is.na(freq)) || length(power) < 3){
     out <- as.list(rep(NA_real_, length(index)))
   } else {
@@ -73,12 +74,15 @@ find_spectrum_indices <- function(freq, power, index = c("mean_freq", "n_freq", 
     })
   }
   
+  if(!is.null(name_append)){
+    index <- paste0(name_append, index)
+  }
   setNames(out, index)
 }
 
 find_splitted_attributes <- function(series, split_method = c("half", "equal_segment"), len = NULL){
   res <- series %>% 
-    series_whole_attr() %>% 
+    series_calc(name_append = "whole_", drop_calc = TRUE) %>% 
     series_split(method = split_method, len = len) %>% 
     lapply(function(x){
       series_calc(x) %>% 

@@ -170,24 +170,7 @@ series_split <- function(series, method = c("half", "equal_segment"), len = NULL
   }
   return(res)
 }
-
-series_whole_attr <- function(series){
-  series %>% 
-    series_gapfill() %>% 
-    bind_attributes(
-      .,
-      find_series_vars(.$data$y, name_append = "whole_y_")
-    ) %>% 
-    bind_attributes(
-      .,
-      find_years_vars(.$data$x, name_append = "whole_x_")
-    ) %>% 
-    bind_attributes(
-      .,
-      find_series_sampling(.$data$y, name_append = "whole_y_")
-    )
-}
-
+ 
 
 series_make <- function(x, y, ID){
   id <- unique(ID)
@@ -204,26 +187,42 @@ series_make <- function(x, y, ID){
   ) 
 }
 
-series_calc <- function(series){
-  series %>% 
+series_calc <- function(series, name_append = NULL, drop_calc = FALSE){
+  
+  y_name <- "y_"
+  x_name <- "x_"
+  if(!is.null(name_append)){
+    y_name <- paste0(name_append, y_name)
+    x_name <- paste0(name_append, x_name)
+  }
+  
+  
+  res <- series %>% 
     series_gapfill() %>% 
     series_transform() %>% 
     series_detrend() %>% 
     power_spec() %>% 
     bind_attributes(
       .,
-      find_spectrum_indices(.$freq, .$power)
+      find_spectrum_indices(.$freq, .$power, name_append = name_append)
     ) %>% 
     bind_attributes(
       .,
-      find_series_vars(.$data$y)
+      find_series_vars(.$data$y, name_append = y_name)
     ) %>% 
     bind_attributes(
       .,
-      find_years_vars(.$data$x)
+      find_years_vars(.$data$x, name_append = x_name)
     ) %>% 
     bind_attributes(
       .,
-      find_series_sampling(.$data$y)
+      find_series_sampling(.$data$y, name_append = y_name)
     )
+  
+  if(drop_calc){
+    res$data <- NULL
+    res$freq <- NULL
+    res$power <- NULL
+  }
+  res
 }
