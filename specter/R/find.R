@@ -43,6 +43,7 @@ find_years_vars <- function(x, index = c("min", "max", "median", "length"), name
   setNames(out, paste0(name_append, index))
 }
 
+
 find_series_sampling <- function(y, name_append = "y_"){
   n <- length(y)
   nms <- sum(!is.na(y))

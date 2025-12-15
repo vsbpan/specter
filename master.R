@@ -3,7 +3,10 @@ vmisc::load_all2("specter")
 
 
 d <- read_csv("raw_data/df35b.233.1-DATA.csv") %>% 
-  rename_all(tolower) 
+  rename_all(tolower) %>% 
+  mutate(
+    sampleyear = ifelse(sampleyear == -9999, NA_real_, sampleyear)
+  )
 d_taxa <- read_csv("raw_data/df35b.236.1-DATA.csv") %>% 
   rename_all(tolower) %>% 
   dplyr::select(-notes)
@@ -18,6 +21,9 @@ d_meta <- read_csv("raw_data/df35b.234.1-DATA.csv") %>%
 
 
 d %>% 
+  filter(
+    !is.na(sampleyear) & !is.na(population)
+  ) %>% 
   mutate(
     series_id = paste0("series_", mainid)
   ) %>% 
@@ -37,7 +43,7 @@ d %>%
       obj
     )
   ) %>%
-  .$chunk %>%
+  .$chunk %>% 
   vmisc::pb_par_lapply(
     function(x){
       lapply(x, find_splitted_attributes) %>% 
