@@ -135,13 +135,12 @@ library(glmmTMB)
 m <- glmmTMB(
   mean_freq ~ 
     x_median_offset +
-    x_median_offset:log(x_length) + 
     scale(x_median_mean) +
-    scale(x_length_offset) + 
+    #scale(x_length_offset) + 
     scale(x_length_mean) +  
-    scale(p_nm_mean) + 
-    scale(p_nm_offset) + 
-    #(1|study_id) + 
+    #scale(p_nm_mean) + 
+    #scale(p_nm_offset) + 
+    (1|study_id) + 
     (1|taxa/newid) + 
     (1|ID), 
   data = d_cleaned %>% 
@@ -159,14 +158,35 @@ m <- glmmTMB(
       x_median_offset = x_median - x_median_mean
     ) %>% 
     filter(
-      p_nm > 0.8 & x_length > 5
+      p_nm == 1 & x_length > 5
     ) %>% 
     filter(
       n() == 2
     ) %>% 
-    ungroup() %>% 
-    filter(
-      series_id %in% sample(series_id, pmin(10000,length(series_id)), replace = FALSE)
-    ), 
+    ungroup(), 
   family = Gamma(link = "log")
 ); summary(m)
+
+
+d_cleaned %>% 
+  mutate(
+    p_nm = 1 - y_missing / y_n
+  ) %>% 
+  group_by(ID) %>% 
+  #filter(all(n_freq > 0)) %>%
+  mutate(
+    p_nm_mean = mean(log(p_nm)),
+    p_nm_offset = log(p_nm) - p_nm_mean,
+    x_length_mean = mean(log(x_length)),
+    x_length_offset = log(x_length) - x_length_mean,
+    x_median_mean = mean(x_median),
+    x_median_offset = x_median - x_median_mean
+  ) %>% 
+  filter(
+    p_nm ==1 & x_length > 5
+  ) %>% 
+  filter(
+    n() == 2
+  ) %>% 
+  ungroup()
+

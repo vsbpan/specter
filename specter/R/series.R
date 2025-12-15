@@ -37,15 +37,15 @@ series_transform <- function(series, trans){
   if(has_error(series)){
     return(series)
   }
-  if(var(series$y, na.rm = TRUE) == 0){
-    series <- set_error(series, reason = "No variance")
-    return(series)
-  }
   if(length(series$y) < 3){
     series <- set_error(series, reason = "length(y) < 3")
     return(series)
   }
-  
+  if(!isTRUE(var(series$y, na.rm = TRUE) > 0)){
+    series <- set_error(series, reason = "No variance")
+    return(series)
+  }
+
   if(any(series$y < 0)){
     
   } else {
