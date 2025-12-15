@@ -20,10 +20,17 @@ foo <- terra::tapp(rast, index = yr,
 names(foo) <- paste0("air_", unique(yr))
 terra::time(foo) <- as.POSIXct(paste0(unique(yr), "-01-01"), tz = "UTC")
 terra::units(foo) <- rep(unique(terra::units(rast)), terra::nlyr(foo))
-terra::varnames(foo) <- "air (Annual Air Temperature at 2 m)"
+terra::varnames(foo) <- "air"
+terra::longnames(foo) <- "Annual Air Temperature at 2 m"
+terra::ext(foo) <- terra::ext(foo) + c(-0.5, 0.5, 0, 0)
 
-
-terra::writeCDF(foo, "cleaned_data/annual_air_temperature_20th_century_reanalysis.nc")
+foo %>% 
+  terra::writeCDF(., "cleaned_data/annual_air_temperature_20th_century_reanalysis.nc", 
+                  varname = terra::varnames(.), 
+                  unit = terra::units(.),
+                  longname = terra::longnames(.),
+                  overwrite = TRUE, 
+                  compression = 9)
 
 
 # GHCN_CAMS Gridded 2m Temperature (Land)
@@ -40,9 +47,17 @@ foo <- terra::tapp(rast, index = yr,
 names(foo) <- paste0("air_", unique(yr))
 terra::time(foo) <- as.POSIXct(paste0(unique(yr), "-01-01"), tz = "UTC")
 terra::units(foo) <- rep(unique(terra::units(rast)), terra::nlyr(foo))
-terra::varnames(foo) <- "air (Annual Air Temperature at 2 m)"
+terra::varnames(foo) <- "air"
+terra::longnames(foo) <- "Annual Air Temperature at 2 m"
 foo <- terra::subset(foo, -terra::nlyr(foo)) # Drop 2025 bc data is incomplete
 
-terra::writeCDF(foo, "cleaned_data/annual_air_temperature_GHCN_CAMS.nc")
+foo %>% 
+  terra::writeCDF(., "cleaned_data/annual_air_temperature_GHCN_CAMS.nc", 
+                varname = terra::varnames(.), 
+                unit = terra::units(.),
+                longname = terra::longnames(.),
+                overwrite = TRUE, 
+                compression = 9)
+
 
 
