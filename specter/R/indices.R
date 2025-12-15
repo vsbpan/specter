@@ -1,4 +1,4 @@
-mean_freq <- function(freq, power){
+mean_freq <- function(freq, power, y = NULL){
   g_hat <- stats::approxfun(x = freq, y = power)
   denom <- cubature::cubintegrate(
     g_hat, lower = min(freq), upper = max(freq)
@@ -13,7 +13,7 @@ mean_freq <- function(freq, power){
   exp(num / denom)
 }
 
-spec_exponent <- function(freq, power){
+spec_exponent <- function(freq, power, y = NULL){
   if(length(freq) < 3){
     return(NA_real_)
   }
@@ -36,23 +36,41 @@ func_div <- function(p, y, q){
     unname()
 }
 
-freq_diversity <- function(freq, power){
+freq_diversity <- function(freq, power, y = NULL){
   func_div(p = power, y = freq, q = 1)
 }
 
-freq_richness <- function(freq, power){
+freq_richness <- function(freq, power, y = NULL){
   func_div(p = power, y = freq, q = 0)
 }
 
-FAP <- function(power){
-  exp(
-    - power / mean(power)
+# Press W.H., Teukolsky S.A., Vetterling S.T., Flannery, B.P. (2007) Numerical recipes in C: the art of scientific computing.3nd edition. Cambridge University Press, Cambridge, pp686.
+# on Page 686: eqn 13.8.7
+FAP <- function(power, sigma2 = NULL){
+  if(is.null(sigma2)){
+    sigma2 <- mean(power) # Approximate
+  }
+  
+  # Take raw power and normalized by 2 * sigma^2
+  z <- power / (2 * sigma2)
+  M <- 2 * length(z) # Approximate M independent samples
+  p <- M * exp(-z) # approximation provided by eqn 13.8.8
+  
+  ifelse(
+    p > 0.01, 
+    1 - (1 - exp(-z))^M, # More accurate
+    p
   )
 }
 
 
-n_freq <- function(freq, power){
-  sum(FAP(power) < 0.05)
+n_freq <- function(freq, power, y = NULL){
+  if(is.null(y)){
+    sigma2 <- NULL
+  } else {
+    sigma2 <- var(y, na.rm = TRUE)
+  }
+  sum(FAP(power, sigma2 = sigma2) < 0.05)
 }
 
 

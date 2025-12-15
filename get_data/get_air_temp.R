@@ -23,6 +23,7 @@ terra::units(foo) <- rep(unique(terra::units(rast)), terra::nlyr(foo))
 terra::varnames(foo) <- "air"
 terra::longnames(foo) <- "Annual Air Temperature at 2 m"
 terra::ext(foo) <- terra::ext(foo) + c(-0.5, 0.5, 0, 0)
+foo <- terra::rotate(foo)
 
 foo %>% 
   terra::writeCDF(., "cleaned_data/annual_air_temperature_20th_century_reanalysis.nc", 
@@ -50,6 +51,7 @@ terra::units(foo) <- rep(unique(terra::units(rast)), terra::nlyr(foo))
 terra::varnames(foo) <- "air"
 terra::longnames(foo) <- "Annual Air Temperature at 2 m"
 foo <- terra::subset(foo, -terra::nlyr(foo)) # Drop 2025 bc data is incomplete
+foo <- terra::rotate(foo)
 
 foo %>% 
   terra::writeCDF(., "cleaned_data/annual_air_temperature_GHCN_CAMS.nc", 

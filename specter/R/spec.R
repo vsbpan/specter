@@ -1,4 +1,59 @@
-power_spec <- function(series){
+power_spec <- function(series, method = c("lomb", "ndft"), ...){
+  
+  method <- match.arg(method)
+  if(method == "ndft"){
+    series <- power_spec_ndft(series, ...)
+  } else {
+    series <- power_spec_lomb(series, ...)
+  }
+  series
+}
+
+power_spec_lomb <- function(series, ...){
+  n <- length(series$x)
+  n2 <- floor(n/2)
+  if(has_error(series) || n2 < 1){
+    series$freq <- rep(NA_real_, n2)
+    series$power <- rep(NA_real_, n2)
+  } else {
+    res <- lomb(series$y, series$x)
+    series$freq <- res$freq
+    series$power <- res$power
+  }
+  series
+}
+
+# Adapted from lomb::lsp()
+lomb <- function (f, x = NULL, ...) {
+  N <- length(f)
+  if (N <= 1)
+    stop("f must be a vector with more than one elements")
+  if (length(x) != N)
+    stop("x and f must be vectors of the same length")
+  
+  n2 <- floor(N/2)
+  freq <- seq(1, n2, by = 1)/N
+  
+  w <- 2 * pi * freq
+  
+  WX <- outer(w, x)
+  tau <- 0.5 * atan2(matrixStats::rowSums2(sin(WX)), 
+                     matrixStats::rowSums2(cos(WX))) / w
+  # Phase shift
+  WX <- WX - w * tau
+  # Projections
+  CSf <- cos(WX) %*% f
+  SNf <- sin(WX) %*% f
+  # Power (denominator simplifies to n)
+  pow <- (CSf^2 + SNf^2) / n2
+  
+  sp.out <- list(freq = freq, 
+                 power = as.vector(pow))
+  return(sp.out)
+}
+
+
+power_spec_ndft <- function(series, ... ){
   n <- length(series$x)
   n2 <- floor(n/2)
   if(has_error(series) || n2 < 1){
@@ -86,4 +141,5 @@ power_spec2 <- function(series){
   series$power <- pow / n2
   series
 }
+
 

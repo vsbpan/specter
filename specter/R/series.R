@@ -187,7 +187,7 @@ series_make <- function(x, y, ID){
   ) 
 }
 
-series_calc <- function(series, name_append = NULL, drop_calc = FALSE){
+series_calc <- function(series, spec_method = c("lomb", "ndft"), name_append = NULL, drop_calc = FALSE){
   
   y_name <- "y_"
   x_name <- "x_"
@@ -201,10 +201,10 @@ series_calc <- function(series, name_append = NULL, drop_calc = FALSE){
     series_gapfill() %>% 
     series_transform() %>% 
     series_detrend() %>% 
-    power_spec() %>% 
+    power_spec(method = spec_method) %>% 
     bind_attributes(
       .,
-      find_spectrum_indices(.$freq, .$power, name_append = name_append)
+      find_spectrum_indices(.$freq, .$power, .$y, name_append = name_append)
     ) %>% 
     bind_attributes(
       .,

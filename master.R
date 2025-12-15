@@ -88,12 +88,12 @@ m <- glmmTMB(
   mean_freq ~ 
     x_median_offset +
     scale(x_median_mean) +
-    scale(x_length_offset) +
-    scale(x_length_mean) +
+    #scale(x_length_offset) +
+    #scale(x_length_mean) +
     #scale(p_nm_mean) +
     #scale(p_nm_offset) +
     (1|datasourceid) + 
-    (1|taxonomicclass/taxonomicfamily/taxonomicgenus/taxonname) + 
+    (1|taxonomicclass/taxonname) + 
     (1|ID), 
   data = d_cleaned %>% 
     filter(
@@ -117,11 +117,11 @@ m <- glmmTMB(
     filter(
       p_nm > 0.8 & x_length > 5
     ) %>% 
-    # filter(
-    #   p_nm == 1
-    # ) %>%
+    filter(
+      p_nm == 1
+    ) %>%
     group_by(ID) %>% 
-    #filter(all(n_freq > 0)) %>%
+    filter(all(whole_n_freq > 0)) %>%
     filter(
       n() == 2
     ) %>% 
@@ -129,7 +129,7 @@ m <- glmmTMB(
     #   diff(x_length) == 0
     # ) %>%
     ungroup(), 
-  #control = glmmTMBControl(optimizer = optim, optArgs = list(method = "BFGS")),
+  control = glmmTMBControl(optimizer = optim, optArgs = list(method = "BFGS")),
   family = Gamma(link = "log")
 ); summary(m)
 

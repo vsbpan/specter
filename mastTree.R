@@ -38,7 +38,7 @@ d %>%
   .$chunk %>%
   vmisc::pb_par_lapply(
     function(x){
-      lapply(x, find_splitted_attributes) %>% 
+      lapply(x, find_splitted_attributes, spec_method = "lomb") %>% 
         do.call("rbind", .)
     }, cores = 8, inorder = FALSE
   ) %>% 
@@ -85,7 +85,7 @@ m <- glmmTMB(
     (1|spatial_unit) + 
     (1|variable) + 
     (1|study_id) + 
-    (1|family/species) + 
+    (1|species) + 
     (1|ID), 
   data = d_cleaned %>% 
     group_by(ID) %>% 
@@ -114,7 +114,7 @@ m <- glmmTMB(
     #   diff(x_length) == 0
     # ) %>% 
     ungroup(), 
-  control = glmmTMBControl(optimizer = optim, optArgs = list(method = "BFGS")),
+  #control = glmmTMBControl(optimizer = optim, optArgs = list(method = "BFGS")),
   family = Gamma(link = "log")
 ); summary(m)
 

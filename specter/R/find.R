@@ -56,7 +56,7 @@ find_series_sampling <- function(y, name_append = "y_"){
   res
 }
 
-find_spectrum_indices <- function(freq, power, index = c("mean_freq", "n_freq", "spec_exponent", 
+find_spectrum_indices <- function(freq, power, y, index = c("mean_freq", "n_freq", "spec_exponent", 
                                                          "freq_diversity", "freq_richness"),
                                   name_append = NULL){
   if(all(is.na(power)) || all(is.na(freq)) || length(power) < 3){
@@ -65,7 +65,7 @@ find_spectrum_indices <- function(freq, power, index = c("mean_freq", "n_freq", 
     out <- lapply(index, function(f){
       f <- match.fun(f)
       tryCatch({
-        f(freq, power)
+        f(freq, power, y)
       }, error = function(e){
         cli::cli_warn(
           c(e$message, "Returning NAs")
@@ -81,12 +81,13 @@ find_spectrum_indices <- function(freq, power, index = c("mean_freq", "n_freq", 
   setNames(out, index)
 }
 
-find_splitted_attributes <- function(series, split_method = c("half", "equal_segment"), len = NULL){
+find_splitted_attributes <- function(series, spec_method = c("lomb", "ndft"), 
+                                     split_method = c("half", "equal_segment"), len = NULL){
   res <- series %>% 
-    series_calc(name_append = "whole_", drop_calc = TRUE) %>% 
+    series_calc(spec_method = spec_method, name_append = "whole_", drop_calc = TRUE) %>% 
     series_split(method = split_method, len = len) %>% 
     lapply(function(x){
-      series_calc(x) %>% 
+      series_calc(x, spec_method = spec_method) %>% 
         collect_attributes()
     }) %>% 
     do.call("rbind", .)
