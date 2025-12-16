@@ -10,6 +10,10 @@ d <- read_csv("raw_data/df35b.233.1-DATA.csv") %>%
 d_taxa <- read_csv("raw_data/df35b.236.1-DATA.csv") %>% 
   rename_all(tolower) %>% 
   dplyr::select(-notes)
+
+d_loc <- read_csv("raw_data/df35b.239.1.csv") %>% 
+  rename_all(tolower)
+
 d_meta <- read_csv("raw_data/df35b.234.1-DATA.csv") %>% 
   rename_all(tolower) %>% 
   left_join(d_taxa) %>% 

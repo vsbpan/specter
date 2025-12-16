@@ -26,7 +26,7 @@ terra::ext(foo) <- terra::ext(foo) + c(-0.5, 0.5, 0, 0)
 foo <- terra::rotate(foo)
 
 foo %>% 
-  terra::writeCDF(., "cleaned_data/annual_air_temperature_20th_century_reanalysis.nc", 
+  terra::writeCDF(., "specter/data/annual_air_temperature_20th_century_reanalysis.nc", 
                   varname = terra::varnames(.), 
                   unit = terra::units(.),
                   longname = terra::longnames(.),
@@ -54,7 +54,7 @@ foo <- terra::subset(foo, -terra::nlyr(foo)) # Drop 2025 bc data is incomplete
 foo <- terra::rotate(foo)
 
 foo %>% 
-  terra::writeCDF(., "cleaned_data/annual_air_temperature_GHCN_CAMS.nc", 
+  terra::writeCDF(., "specter/data/annual_air_temperature_GHCN_CAMS.nc", 
                 varname = terra::varnames(.), 
                 unit = terra::units(.),
                 longname = terra::longnames(.),
