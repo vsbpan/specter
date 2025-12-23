@@ -8,7 +8,7 @@ list(
   "x" = seq(1, N, by = 1), 
   "y" = sin(seq(1, N, by = 1) / k) * A
 ) %>% 
-  rand_drop(p = 0.1, set_as_NA = FALSE) %>% 
+  series_rand_drop(p = 0.1, set_as_NA = FALSE) %>% 
   power_spec() %>% 
   with(
     {
@@ -19,7 +19,7 @@ list(
 
 
 
-simulate_one_instance <- function(k, N, p){
+simulate_one_instance <- function(k, N, p, method = c("lomb", "ndft")){
   if((N - ceiling(N * p)) < 4){
     return(NA_real_)
   }
@@ -28,8 +28,8 @@ simulate_one_instance <- function(k, N, p){
     "x" = seq(1, N, by = 1), 
     "y" = sin(seq(1, N, by = 1) / k)
   ) %>% 
-    rand_drop(p = p, set_as_NA = FALSE) %>% 
-    power_spec() %>%
+    series_rand_drop(p = p, set_as_NA = FALSE) %>% 
+    power_spec(method = method) %>%
     with(
       pred_error_score(freq, power, 1/(2 * pi * k))
     )
@@ -53,7 +53,8 @@ d_grid %>%
         simulate_one_instance(
           k = as.numeric(v["k"]),
           N = as.numeric(v["N"]),
-          p = as.numeric(v["p"])
+          p = as.numeric(v["p"]), 
+          method = "ndft"
         )
       }, simplify = FALSE) %>% 
         do.call("c", .) %>% 
@@ -67,16 +68,54 @@ d_grid %>%
   do.call("rbind", .) -> d_res2
 
 
-write_csv(d_res2, "cleaned_data/ndft_recovery_simulation.csv")
+# write_csv(d_res2, "cleaned_data/ndft_recovery_simulation.csv")
+
+d_grid %>%
+  assign_chunk(n_chunks = 320) %>% 
+  group_by(chunk_id) %>% 
+  dplyr::group_split() %>% 
+  vmisc::pb_par_lapply(
+    function(x){
+      res <- apply(x, 1, function(v){
+        simulate_one_instance(
+          k = as.numeric(v["k"]),
+          N = as.numeric(v["N"]),
+          p = as.numeric(v["p"]), 
+          method = "lomb"
+        )
+      }, simplify = FALSE) %>% 
+        do.call("c", .) %>% 
+        unname()
+      
+      cbind(x, "score" = res)
+    }, 
+    cores = 8, 
+    inorder = FALSE
+  ) %>% 
+  do.call("rbind", .) -> d_res3
 
 
+# write_csv(d_res3, "cleaned_data/lomb_recovery_simulation.csv")
 
 
 
 d_res2 <- read_csv("cleaned_data/ndft_recovery_simulation.csv")
+d_res3 <- read_csv("cleaned_data/lomb_recovery_simulation.csv")
 
 
 
+
+d_res2 %>% 
+  rename(score_1 = score) %>% 
+  dplyr::select(-chunk_id) %>% 
+  left_join(
+    d_res3 %>% 
+      rename(score_2 = score) %>% 
+      dplyr::select(-chunk_id)
+  ) %>% 
+  mutate(
+    score = abs(score_1) - abs(score_2) # The higher the score, the worse NDFT is over Lomb
+  ) -> d_res4
 
 d_res2 %>% 
   group_by(k, N, p) %>% 

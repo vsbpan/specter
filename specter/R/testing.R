@@ -1,4 +1,4 @@
-rand_drop <- function(series, n = 10, p = NULL, set_as_NA = FALSE){
+series_rand_drop <- function(series, n = 10, p = NULL, set_as_NA = FALSE){
   if(!is.null(p)){
     n <- ceiling(length(series$x)*p)
   }
