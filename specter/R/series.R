@@ -172,7 +172,7 @@ series_split <- function(series, method = c("half", "equal_segment"), len = NULL
 }
  
 
-series_make <- function(x, y, ID){
+series_make <- function(x, y, ID, ...){
   id <- unique(ID)
   if(length(id) != 1){
     cli::cli_abort("Detected more than 1 ID.")
@@ -180,11 +180,16 @@ series_make <- function(x, y, ID){
   if(length(x) != length(y)){
     cli::cli_abort("{.arg x} and {.arg y} must have the same length.")
   }
-  list(
+  dots <- list(...)
+  res <- list(
     "x" = x, 
     "y" = y,
     "attributes" = list("ID" = id, "error" = FALSE, "error_reason" = character(0))
   ) 
+  c(
+    res,
+    dots
+  )
 }
 
 series_calc <- function(series, spec_method = c("lomb", "ndft"), name_append = NULL, drop_calc = FALSE){
