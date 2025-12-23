@@ -186,10 +186,12 @@ series_make <- function(x, y, ID, ...){
     "y" = y,
     "attributes" = list("ID" = id, "error" = FALSE, "error_reason" = character(0))
   ) 
-  c(
+  out <- c(
     res,
     dots
   )
+  class(out) <- c("series","list")
+  out
 }
 
 series_calc <- function(series, spec_method = c("lomb", "ndft"), name_append = NULL, drop_calc = FALSE){

@@ -23,3 +23,13 @@ assign_chunk <- function(.df, n_chunks = 32, group = NULL){
   }
   .df
 }
+
+# Remove attributes except for those specified in `exclude =` 
+drop_attributes <- function(x, exclude = NULL){
+  if(is.null(exclude)){
+    attributes(x) <- NULL
+  } else {
+    attributes(x) <- attributes(x)[exclude]
+  }
+  return(x)
+}

@@ -2,42 +2,17 @@ library(tidyverse)
 vmisc::load_all2("specter")
 
 
-d <- read_csv("raw_data/df35b.233.1-DATA.csv") %>% 
-  rename_all(tolower) %>% 
-  mutate(
-    sampleyear = ifelse(sampleyear == -9999, NA_real_, sampleyear)
-  )
-d_taxa <- read_csv("raw_data/df35b.236.1-DATA.csv") %>% 
-  rename_all(tolower) %>% 
-  dplyr::select(-notes)
-
-d_loc <- read_csv("raw_data/df35b.239.1.csv") %>% 
-  rename_all(tolower)
-
-d_meta <- read_csv("raw_data/df35b.234.1-DATA.csv") %>% 
-  rename_all(tolower) %>% 
-  left_join(d_taxa) %>% 
-  mutate(
-    sourcedimension = tolower(sourcedimension)
-  )
+d <- read_csv("cleaned_data/GPDD_series_cleaned.csv")
+d_meta <- read_csv("cleaned_data/GPDD_meta_cleaned.csv")
 
 ## Need to throw out morbillivirus
 
 
 d %>% 
-  filter(
-    !is.na(sampleyear) & !is.na(population)
-  ) %>% 
-  mutate(
-    series_id = paste0("series_", mainid)
-  ) %>% 
-  group_by(series_id, sampleyear) %>% 
-  summarise(
-    population = max(population)
-  ) %>% 
+  group_by(mainid) %>% 
   summarise(
     obj = list(
-      series_make(x = sampleyear, y = population, ID = series_id)
+      series_make(x = year, y = population, ID = mainid)
     )
   ) %>% 
   assign_chunk() %>% 
