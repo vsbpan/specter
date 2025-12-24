@@ -49,8 +49,14 @@ series_transform <- function(series, trans){
   if(any(series$y < 0)){
     
   } else {
-    series$y <- log(series$y + min(series$y[series$y>0]) / 2)
+    epsilon <- min(series$y[series$y>0]) / 2
+    series$y <- ifelse(series$y == 0,series$y + epsilon, series$y)
+    series$y <- log(series$y)
+    series <- bind_attributes(series, list(
+      "epsilon" = epsilon
+    ))
   }
+  
   series
 }
 

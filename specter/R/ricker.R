@@ -1,11 +1,26 @@
 series_format <- function(series){
-  series <- series_gapfill(series)
-  lN <- log(series$data$y)
+  series <- series_gapfill(series) %>% 
+    series_transform()
+  epsilon <- series$attributes$epsilon
+  if(is.null(epsilon)){
+    epsilon <- 0
+  }
+  lN <- ifelse(
+    series$data$y == 0,
+    series$data$y + epsilon,
+    series$data$y
+  )
+  lN <- log(lN)
+  
+  if(any(!is.finite(lN) & !is.na(lN))){
+    cli::cli_warn("Detected {sum(!is.finite(lN))} non-finite value{?s} in series after transforming.")
+  }
+  
   out <- data.frame(
     "lN" = lN,
     "lN_lag" = dplyr::lag(lN, n = 1)
   )
-  out <- out[!is.na(out$lN) & !is.na(out$lN_lag),]
+  out <- out[is.finite(out$lN) & is.finite(out$lN_lag),]
   out
 }
 
@@ -38,5 +53,73 @@ ricker_sim <- function(r, K, N0, sigma, t = 100, as_series = FALSE, seed = NULL)
     )
   }
   return(out)
+}
+
+
+
+ricker_fit <- function(series, prior = NULL, update_params = TRUE, opt_method = "auto", ...){
+  df <- series_format(series)
+  ricker_params <- c("r", "lK", "log_sigma")
+  
+  if(!is.null(prior)){
+    pn <- names(prior)
+    
+    if(!identical(sort(ricker_params), sort(pn))){
+      cli::cli_abort("The provided prior must be {.val NULL} or be a unique list of {.cls distr} objects for each of the parameters {.val {ricker_params}}.")
+    }
+  }
+  
+  opt_method_og <- opt_method
+  if(opt_method == "auto"){
+    opt_method <- "Nelder-Mead"
+  }
+  
+  mod_start <- ricker_auto_start(df)
+  fit_mod <- function(start, method, ...){
+    out <- mle_fit(
+      fn = formula(
+        lN ~ lN_lag + r * (1 - exp(lN_lag - lK))
+      ), 
+      data = df, 
+      start = start, 
+      prior = prior, 
+      dist = "gaussian",
+      method = method,
+      ...)
+    out
+  }
+  
+  m <- tryCatch({
+    fit_mod(mod_start, method = opt_method, ...)
+  }, error = function(e){
+    cli::cli_alert_danger(sprintf("Error while fitting model:\n%s", crayon::yellow(e$message)))
+    return(e)
+  })
+  
+  if((is.error(m) || !converged(m)) && opt_method_og == "auto"){
+    for (optim_method in c("BFGS", "LBFGSB3","nlminb","CG","SANN")){
+      m <- tryCatch({
+        fit_mod(mod_start, method = optim_method, ...)
+      }, error = function(e){
+        cli::cli_alert_danger(sprintf("Error while fitting model:\n%s", crayon::yellow(e$message)))
+        return(e)
+      })
+      if(!is.error(m) && converged(m)){
+        break
+      }
+    }
+  }
+  
+  if(isTRUE(update_params) && (is.error(m) || !converged(m))){
+    m <- update_params(m, 
+                         old_param = ricker_params, 
+                         new_param = c("r", "K", "sigma"),
+                         trans = list(
+                           function(x) x,
+                           function(x) exp(x),
+                           function(x) exp(x)
+                         )) 
+  }
+  m
 }
 

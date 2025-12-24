@@ -52,3 +52,7 @@ registerS3method(genname = "vcov",
 registerS3method(genname = "plot", 
                  class = "series", 
                  method = plot.series)
+
+registerS3method(genname = "print",
+                 class = "distr",
+                 method = print.distr)

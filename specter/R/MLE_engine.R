@@ -164,6 +164,8 @@ mle_fit <- function(fn, data, start, prior = NULL, dist = c("gaussian", "beta", 
   fit$loglik <- -fit$value
   fit$prior <- prior
   fit$dist <- dist
+  fit$n <- nrow(data)
+  fit$obj_method <- if(is.null(prior)) c("MLE") else c("MAP")
   
   class(fit) <- if(is.null(prior)) c("mle_fit") else c("map_fit","mle_fit")
   return(fit)
@@ -179,7 +181,8 @@ print.mle_fit <- function(x, digits = 4){
   } else {
     cli::cli_alert_danger(sprintf("Model failed to converge: %s", x$convergence))
   }
-  cli::cat_line(sprintf("Loglik: %s\n", round(x$loglik, 4)))
+  cli::cat_line(sprintf("Family: %s (%s)", x$dist, x$obj_method))
+  cli::cat_line(sprintf("Loglik: %s (n=%s)\n", round(x$loglik, 4), x$n))
   print(summary(x), digits = digits)
 }
 
@@ -243,7 +246,7 @@ make_prior <- function(prior){
         arg <- as.list(x$param)
         arg <- c(theta[i],arg)
         names(arg)[1] <- "x"
-        log(do.call(paste0("d", x$dist), arg))
+        log(do.call(paste0("d", x$name), arg))
       }
     )
     sum(do.call("c", v))

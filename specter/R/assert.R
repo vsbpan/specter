@@ -11,6 +11,10 @@ is.mle_fit <- function(x, ...){
   inherits(x, "mle_fit")
 }
 
+is.map_fit <- function(x, ...){
+  inherits(x, "map_fit")
+}
+
 is.series <- function(x, ...){
   inherits(x, "series")
 }
