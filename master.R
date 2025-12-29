@@ -12,7 +12,10 @@ d %>%
   group_by(mainid) %>% 
   summarise(
     obj = list(
-      series_make(x = year, y = population, ID = mainid)
+      list(
+        "population" = series_make(x = year, y = population, ID = mainid),
+        "temperature" = series_make(x = year, y = air_temp, ID = mainid)
+      )
     )
   ) %>% 
   assign_chunk() %>% 
@@ -25,14 +28,28 @@ d %>%
   .$chunk %>% 
   vmisc::pb_par_lapply(
     function(x){
-      lapply(x, find_splitted_attributes) %>% 
+      res1 <- lapply(x, function(x){
+        find_splitted_attributes(x$population)
+      }) %>% 
         do.call("rbind", .)
+      res2 <- lapply(x, function(x){
+        find_splitted_attributes(x$temperature)
+      }) %>% 
+        do.call("rbind", .)
+        
+   list(
+     "population" = res1,
+     "temperature" = res2
+   )
     }, cores = 8, inorder = FALSE
-  ) %>% 
-  do.call("rbind", .) -> d_res
+  ) -> d_res
+
+d_res_pop <- map(d_res, "population") %>% do.call("rbind", .)
+d_res_temp <- map(d_res, "temperature") %>% do.call("rbind", .)
 
 
-d_cleaned <- d_res %>% 
+
+d_cleaned <- d_res_pop %>% 
   filter(!error & !is.na(mean_freq)) %>% 
   group_by(ID) %>% 
   filter(
@@ -46,7 +63,7 @@ d_cleaned <- d_cleaned %>%
   left_join(
     d_meta %>% 
       mutate(
-        ID = paste0("series_", mainid)
+        ID = mainid
       )
   ) %>% 
   mutate(
@@ -58,10 +75,11 @@ d_cleaned <- d_cleaned %>%
 
 library(glmmTMB)
 
-allowed_dimensions <- c("density", "count", "mean count", "count (estimated)", "mean concentration", "mean density")
-allowed_class <- c(
-  
-)
+d_cleaned %>% 
+  ggplot(aes(x = x_median, y = mean_freq)) + 
+  geom_point() + 
+  geom_smooth()
+
 
 m <- glmmTMB(
   mean_freq ~ 
@@ -72,12 +90,9 @@ m <- glmmTMB(
     #scale(p_nm_mean) +
     #scale(p_nm_offset) +
     (1|datasourceid) + 
-    (1|taxonomicclass/taxonname) + 
+    (1|class/name_cleaned) + 
     (1|ID), 
   data = d_cleaned %>% 
-    filter(
-      sourcedimension %in% allowed_dimensions
-    ) %>% 
     group_by(ID) %>% 
     mutate(
       p_nm = 1 - y_missing / y_n,

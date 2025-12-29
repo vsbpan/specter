@@ -221,7 +221,7 @@ series_attribute_rename <- function(series, name_append = NULL){
   series
 }
 
-series_calc <- function(series, spec_method = c("lomb", "ndft"), name_append = NULL, drop_calc = FALSE){
+series_calc <- function(series, spec_method = c("lomb", "ndft"), name_append = NULL, drop_calc = FALSE, restore = FALSE){
   
   y_name <- "y_"
   x_name <- "x_"
@@ -253,6 +253,11 @@ series_calc <- function(series, spec_method = c("lomb", "ndft"), name_append = N
       .,
       find_series_sampling(.$data$y, name_append = y_name)
     )
+  
+  if(restore){
+    res$x <- res$data$x
+    res$y <- res$data$y
+  }
   
   if(drop_calc){
     res$data <- NULL
