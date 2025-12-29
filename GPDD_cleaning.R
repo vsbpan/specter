@@ -77,8 +77,6 @@ d <- d %>%
   dplyr::ungroup() %>% 
   dplyr::select(mainid, population, year)
 
-# write_csv(d, "cleaned_data/GPDD_series_cleaned.csv")
-
 # Add taxon info
 d_taxon2 <- readr::read_csv("cleaned_data/GPDD_taxon_info.csv") %>% 
   dplyr::select(
@@ -134,7 +132,36 @@ d_cleaned <- d_cleaned %>%
     by = "taxonname"
   )
 
+
+z <- d %>% 
+  group_by(mainid) %>% 
+  summarise(
+    obj = list(series_make(year, population, mainid))
+  ) 
+
+z$obj <- lapply(z$obj, series_gapfill)
+d <- lapply(z$obj, function(o){
+  data.frame(
+    "mainid" = o$attributes$ID,
+    "year" = o$data$x,
+    "population" = o$data$y
+  )
+}) %>% 
+  do.call("rbind", .)
+
+
+d <- d %>% 
+  left_join(
+    d_cleaned %>% 
+      dplyr::select(mainid, lon, lat), by = "mainid"
+  ) %>% 
+  mutate(
+    air_temp = find_temperature(lon, lat, year, mainid)
+  )
+d <- d %>% dplyr::select(-c(lon, lat))
+
 # write_csv(d_cleaned, "cleaned_data/GPDD_meta_cleaned.csv")
+# write_csv(d, "cleaned_data/GPDD_series_cleaned.csv")
 
 
 
