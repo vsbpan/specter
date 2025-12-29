@@ -165,6 +165,7 @@ mle_fit <- function(fn, data, start, prior = NULL, dist = c("gaussian", "beta", 
   fit$prior <- prior
   fit$dist <- dist
   fit$n <- nrow(data)
+  fit$y_name <- resp_name
   fit$obj_method <- if(is.null(prior)) c("MLE") else c("MAP")
   
   class(fit) <- if(is.null(prior)) c("mle_fit") else c("map_fit","mle_fit")
@@ -220,7 +221,9 @@ posterior_epred.mle_fit <- function(x, newdata = NULL, ndraws = 100, re_formula 
       mvtnorm::rmvnorm(ndraws, mean = stats::coef(x),sigma = vcov_mat)
     })
     
-    
+    if(is.null(newdata)){
+      newdata <- x$data
+    }
     
     stopifnot(is.data.frame(newdata))
     newdata <- as.list(newdata)
@@ -299,6 +302,9 @@ update_params <- function(x, old_param, new_param, trans){
   trans <- trans[o]
   new_param <- new_param[o]
   
+  x$vcov_og <- x$vcov
+  x$par_og <- x$par
+  
   x$vcov <- vmisc::FOSM2(
     coef(x), 
     vcov(x), 
@@ -318,4 +324,25 @@ update_params <- function(x, old_param, new_param, trans){
 }
 
 
+predict.mle_fit <- function(object, ci = FALSE, ...){
+  mat <- posterior_epred(object, ...)
+  
+  mu <- matrixStats::colMeans2(mat)
+  if(isTRUE(is.numeric(ci))){
+    ci_l <- (1 - ci) / 2
+    ci_u <- ci + ci_l
+    out <- as.data.frame(cbind("estimate" = mu, matrixStats::colQuantiles(mat, probs = c(ci_l, ci_u))))
+    names(out)[2:3] <- c("lower", "upper")
+  } else {
+    out <- mu
+  }
+  return(out)
+  
+}
 
+
+r2.mle_fit <- function(model, ...){
+  y <- model$data[,model$y_name]
+  x <- predict(model)
+  cor(x, y)^2
+}

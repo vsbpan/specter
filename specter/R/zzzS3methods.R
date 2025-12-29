@@ -4,6 +4,11 @@ converged <- function(x, ...){
   UseMethod("converged")
 }
 
+r2 <- function(model, ...){
+  UseMethod("r2")
+}
+
+
 # Generate posterior prediction from model
 posterior_epred <- function(x, newdata = NULL, ndraws, 
                             re_formula = NA, 
@@ -45,6 +50,10 @@ registerS3method(genname = "print",
                  class = "mle_fit",
                  method = print.mle_fit)
 
+registerS3method(genname = "predict",
+                 class = "mle_fit",
+                 method = predict.mle_fit)
+
 registerS3method(genname = "vcov", 
                  class = "mle_fit", 
                  method = vcov.mle_fit)
@@ -52,6 +61,18 @@ registerS3method(genname = "vcov",
 registerS3method(genname = "plot", 
                  class = "series", 
                  method = plot.series)
+
+registerS3method(genname = "plot", 
+                 class = "ricker_fit", 
+                 method = plot.ricker_fit)
+
+registerS3method(genname = "predict", 
+                 class = "ricker_fit", 
+                 method = predict.ricker_fit)
+
+registerS3method(genname = "r2", 
+                 class = "mle_fit", 
+                 method = r2.mle_fit)
 
 registerS3method(genname = "print",
                  class = "distr",

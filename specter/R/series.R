@@ -35,29 +35,41 @@ series_gapfill <- function(series) {
 
 series_transform <- function(series, trans){
   if(has_error(series)){
+    epsilon <- NA
+    series <- bind_attributes(series, list(
+      "epsilon" = epsilon
+    ))
     return(series)
   }
   if(length(series$y) < 3){
+    epsilon <- NA
     series <- set_error(series, reason = "length(y) < 3")
+    series <- bind_attributes(series, list(
+      "epsilon" = epsilon
+    ))
     return(series)
   }
   if(!isTRUE(var(series$y, na.rm = TRUE) > 0)){
+    epsilon <- NA
     series <- set_error(series, reason = "No variance")
+    series <- bind_attributes(series, list(
+      "epsilon" = epsilon
+    ))
     return(series)
   }
 
   if(any(series$y < 0)){
-    
+    epsilon <- NA
   } else {
     epsilon <- min(series$y[series$y>0]) / 2
     series$y <- ifelse(series$y == 0,series$y + epsilon, series$y)
     series$y <- log(series$y)
-    series <- bind_attributes(series, list(
-      "epsilon" = epsilon
-    ))
   }
+  series <- bind_attributes(series, list(
+    "epsilon" = epsilon
+  ))
   
-  series
+  return(series)
 }
 
 series_detrend <- function(series){
@@ -200,6 +212,15 @@ series_make <- function(x, y, ID, ...){
   out
 }
 
+
+series_attribute_rename <- function(series, name_append = NULL){
+  new_names <- names(series$attributes)
+  ind <- !new_names %in% c("ID", "error", "error_reason")
+  new_names[ind] <- paste0(name_append, new_names[ind])
+  names(series$attributes) <- new_names
+  series
+}
+
 series_calc <- function(series, spec_method = c("lomb", "ndft"), name_append = NULL, drop_calc = FALSE){
   
   y_name <- "y_"
@@ -215,6 +236,7 @@ series_calc <- function(series, spec_method = c("lomb", "ndft"), name_append = N
     series_transform() %>% 
     series_detrend() %>% 
     power_spec(method = spec_method) %>% 
+    series_attribute_rename(name_append = name_append) %>% 
     bind_attributes(
       .,
       find_spectrum_indices(.$freq, .$power, .$y, name_append = name_append)
@@ -239,3 +261,5 @@ series_calc <- function(series, spec_method = c("lomb", "ndft"), name_append = N
   }
   res
 }
+
+

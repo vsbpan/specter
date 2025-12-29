@@ -1,4 +1,4 @@
-series_format <- function(series){
+series_format <- function(series, keep_year = FALSE){
   series <- series_gapfill(series) %>% 
     series_transform()
   epsilon <- series$attributes$epsilon
@@ -20,6 +20,10 @@ series_format <- function(series){
     "lN" = lN,
     "lN_lag" = dplyr::lag(lN, n = 1)
   )
+  
+  if(keep_year){
+    out <- cbind(out, "year" = series$data$x)
+  }
   out <- out[is.finite(out$lN) & is.finite(out$lN_lag),]
   out
 }
@@ -58,7 +62,7 @@ ricker_sim <- function(r, K, N0, sigma, t = 100, as_series = FALSE, seed = NULL)
 
 
 ricker_fit <- function(series, prior = NULL, update_params = TRUE, opt_method = "auto", ...){
-  df <- series_format(series)
+  df <- series_format(series, keep_year = TRUE)
   ricker_params <- c("r", "lK", "log_sigma")
   
   if(!is.null(prior)){
@@ -110,7 +114,7 @@ ricker_fit <- function(series, prior = NULL, update_params = TRUE, opt_method = 
     }
   }
   
-  if(isTRUE(update_params) && (is.error(m) || !converged(m))){
+  if(isTRUE(update_params) && !(is.error(m) || !converged(m))){
     m <- update_params(m, 
                          old_param = ricker_params, 
                          new_param = c("r", "K", "sigma"),
@@ -120,6 +124,33 @@ ricker_fit <- function(series, prior = NULL, update_params = TRUE, opt_method = 
                            function(x) exp(x)
                          )) 
   }
+  class(m) <- c("ricker_fit", class(m))
   m
 }
 
+predict.ricker_fit <- function(object, ci = FALSE, ...){
+  if(!is.null(object$vcov_og)){
+    object$vcov <- object$vcov_og 
+    object$par <- object$par_og 
+  }
+  NextMethod("predict")
+}
+
+
+plot.ricker_fit <- function(x,  xlab = "year", ylab = "value", log = "y", ...){
+  pred <- predict(x, ci = 0.95, newdata = x$data)
+  dat <- cbind(pred, x$data)
+  
+  with(dat, {
+    plot(exp(lN) ~ year, col = "black", type = "l", xlab = xlab, ylab = ylab, log = log, ...)
+    lines(
+      exp(estimate) ~ year, col = "red"
+    )
+    lines(
+      exp(lower) ~ year, col = "red", lty = 2
+    )
+    lines(
+      exp(upper) ~ year, col = "red", lty = 2
+    )
+  })
+}
