@@ -190,7 +190,7 @@ print.mle_fit <- function(x, digits = 4){
 # Summary method for a `mle_fit` object
 summary.mle_fit <- function(x){
   data.frame(
-    "estiamte" = unname(x$par),
+    "estimate" = unname(x$par),
     "se" = unname(x$se), 
     row.names = names(x$par)
   )

@@ -1,4 +1,7 @@
-assign_chunk <- function(.df, n_chunks = 32, group = NULL){
+assign_chunk <- function(.df, n_chunks = 32, group = NULL, seed = NULL){
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   if(is.null(group)){
     n <- nrow(.df)
     s <- ceiling(n/n_chunks)

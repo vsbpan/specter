@@ -49,6 +49,18 @@ d_res_temp <- map(d_res, "temperature") %>% do.call("rbind", .)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 d_cleaned <- d_res_pop %>% 
   filter(!error & !is.na(mean_freq)) %>% 
   group_by(ID) %>% 

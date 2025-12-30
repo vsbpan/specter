@@ -114,7 +114,7 @@ ricker_fit <- function(series, prior = NULL, update_params = TRUE, opt_method = 
     }
   }
   
-  if(isTRUE(update_params) && !(is.error(m) || !converged(m))){
+  if(isTRUE(update_params)){
     m <- update_params(m, 
                          old_param = ricker_params, 
                          new_param = c("r", "K", "sigma"),
@@ -137,7 +137,7 @@ predict.ricker_fit <- function(object, ci = FALSE, ...){
 }
 
 
-plot.ricker_fit <- function(x,  xlab = "year", ylab = "value", log = "y", ...){
+plot.ricker_fit <- function(x, xlab = "year", ylab = "value", log = "y", ...){
   pred <- predict(x, ci = 0.95, newdata = x$data)
   dat <- cbind(pred, x$data)
   
@@ -154,3 +154,46 @@ plot.ricker_fit <- function(x,  xlab = "year", ylab = "value", log = "y", ...){
     )
   })
 }
+
+coef_frame <- function(x, ...){
+  stopifnot(is.mle_fit(x))
+  x %>% 
+    summary(...) %>% 
+    as.matrix() %>% 
+    vmisc::flatten_mat_name() %>% 
+    t() %>% 
+    as.data.frame() %>% 
+    cbind(
+      "converged" = converged(x)
+    )
+}
+
+find_ricker_coef <- function(series, prior = NULL, name_append = NULL){
+  res <- ricker_fit(series, 
+             prior = prior) %>% 
+    coef_frame()
+  names(res) <- gsub("__", ".", names(res))
+  names(res) <- paste0(name_append, names(res))
+  res
+}
+
+find_splitted_ricker_coef <- function(series, prior = NULL, split_method = c("half", "equal_segment"), len = NULL){
+  res <- series %>% 
+    bind_attributes(
+      .,
+      find_ricker_coef(., prior = prior, name_append = "whole_")
+    ) %>%  
+    series_split(method = split_method, len = len) %>% 
+    lapply(function(x){
+      bind_attributes(
+        x,
+        find_ricker_coef(x, prior = prior)
+      ) %>% 
+        collect_attributes()
+    }) %>% 
+    do.call("rbind", .)
+  rownames(res) <- NULL
+  res
+}
+
+

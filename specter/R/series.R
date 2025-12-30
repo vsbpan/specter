@@ -221,7 +221,8 @@ series_attribute_rename <- function(series, name_append = NULL){
   series
 }
 
-series_calc <- function(series, spec_method = c("lomb", "ndft"), name_append = NULL, drop_calc = FALSE, restore = FALSE){
+series_calc <- function(series, spec_method = c("lomb", "ndft"), 
+                        name_append = NULL, drop_calc = FALSE, restore = FALSE){
   
   y_name <- "y_"
   x_name <- "x_"
