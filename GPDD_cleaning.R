@@ -160,6 +160,15 @@ d <- d %>%
   )
 d <- d %>% dplyr::select(-c(lon, lat))
 
+d <- d %>% 
+  group_by(mainid) %>% 
+  mutate(
+    has_negative = any(population < 0),
+    population = ifelse(has_negative, exp(population), population)
+  ) %>% 
+  dplyr::select(-has_negative) %>% 
+  ungroup()
+
 # write_csv(d_cleaned, "cleaned_data/GPDD_meta_cleaned.csv")
 # write_csv(d, "cleaned_data/GPDD_series_cleaned.csv")
 

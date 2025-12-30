@@ -5,12 +5,16 @@ series_format <- function(series, keep_year = FALSE){
   if(is.null(epsilon)){
     epsilon <- 0
   }
-  lN <- ifelse(
-    series$data$y == 0,
-    series$data$y + epsilon,
-    series$data$y
-  )
-  lN <- log(lN)
+  if(any(series$data$y < 0)){
+    lN <- series$data$y
+  } else {
+    lN <- ifelse(
+      series$data$y == 0,
+      series$data$y + epsilon,
+      series$data$y
+    )
+    lN <- log(lN) 
+  }
   
   if(any(!is.finite(lN) & !is.na(lN))){
     cli::cli_warn("Detected {sum(!is.finite(lN))} non-finite value{?s} in series after transforming.")
