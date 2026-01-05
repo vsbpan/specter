@@ -68,7 +68,7 @@ find_family_param <- function(dist = c("gaussian", "beta", "Gamma")){
 }
 
 # Use maximum likelihood estimation or maximum a posteriori to estimate parameters in an objective function
-mle_fit <- function(fn, data, start, prior = NULL, dist = c("gaussian", "beta", "Gamma"), ...){
+mle_fit <- function(fn, data, start, prior = NULL, dist = c("gaussian", "beta", "Gamma"), ..., empty = FALSE){
   dist <- match.arg(dist)
   f <- as.function(fn)
   all_params <- find_params_formula(fn)
@@ -124,38 +124,50 @@ mle_fit <- function(fn, data, start, prior = NULL, dist = c("gaussian", "beta", 
                  paste0(param_names, collapse = ", ")))
   }
   
-  fit <- calibrar::optim2(init, fn = nll, hessian = TRUE, ...)
-  if(is.null(fit$hessian)){
-    fit$hessian <- hessian(nll, fit$par)
-    dimnames(fit$hessian) <- list(names(fit$par), names(fit$par))
-  }
-  fit$vcov <- tryCatch(solve(fit$hessian), error = function(e){
-    message(e$message)
-    
-    h_dim <- dim(fit$hessian)
-    
-    return(
-      matrix(rep(NA_real_, prod(h_dim)), 
-             dimnames = dimnames(fit$hessian), 
-             nrow = h_dim[1], 
-             ncol = h_dim[2])
+  if(isTRUE(empty)){
+    fit <- list(
+      "par" = setNames(rep(NA_real_, n), param_names),
+      "value" = NA_real_,
+      "counts" = setNames(c(NA_integer_, NA_integer_), c("function", "gradient")),
+      "convergence" = 3L,
+      "message" = "empty object with mle_fit(empty = TRUE)",
+      "vcov" = matrix(rep(NA_real_, n^2), dimnames = list(param_names, param_names), nrow = n, ncol = n)
     )
-  })
+  } else {
+    fit <- calibrar::optim2(init, fn = nll, hessian = TRUE, ...)
+    
+    if(is.null(fit$hessian)){
+      fit$hessian <- hessian(nll, fit$par)
+      dimnames(fit$hessian) <- list(names(fit$par), names(fit$par))
+    }
+    
+    fit$vcov <- tryCatch(solve(fit$hessian), error = function(e){
+      message(e$message)
+      
+      h_dim <- dim(fit$hessian)
+      
+      return(
+        matrix(rep(NA_real_, prod(h_dim)), 
+               dimnames = dimnames(fit$hessian), 
+               nrow = h_dim[1], 
+               ncol = h_dim[2])
+      )
+    })
+    diag(fit$vcov)[diag(fit$vcov) < 0] <- NA_real_
+    not_pos_def <- tryCatch(any(eigen(fit$vcov, only.values = TRUE)$values < 0), 
+                            error = function(e){
+                              FALSE
+                            })
+    if(isTRUE(not_pos_def)){
+      cli::cli_warn("Variance-covariance matrix is not positive semidefinite.")
+      fit$vcov[] <- NA_real_
+    }
+    fit$hessian <- NULL
+  }
   
-  diag(fit$vcov)[diag(fit$vcov) < 0] <- NA_real_
-  not_pos_def <- tryCatch(any(eigen(fit$vcov, only.values = TRUE)$values < 0), 
-                          error = function(e){
-                            FALSE
-                          })
   fit$se <- suppressWarnings(sqrt(diag(fit$vcov)))
   
-  if(isTRUE(not_pos_def)){
-    cli::cli_warn("Variance-covariance matrix is not positive semidefinite.")
-    fit$vcov[] <- NA_real_
-  }
-  
-  fit$hessian <- NULL
-  if(any(is.na(fit$vcov))){
+  if(isTRUE(fit$convergence == 0) && any(is.na(fit$vcov))){
     fit$convergence <- 2 
   }
   fit$init <- init
@@ -267,7 +279,6 @@ as_oneside <- function(formula){
 converged.mle_fit <- function(x){
   isTRUE(x$convergence == 0)
 }
-
 
 match_link_fun <- function(dist){
   switch(dist, 

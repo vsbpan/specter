@@ -39,12 +39,13 @@ d %>%
       
       prior <- list(
         "r" = vmisc::distr_make("norm", list("mean" = 0.5, "sd" = 1)),
-        "lK" = vmisc::distr_make("norm", list("mean" = 3, "sd" = 10)),
+        "lK" = vmisc::distr_make("norm", list("mean" = NA_real_, "sd" = 3)),
         "log_sigma" = vmisc::distr_make("norm", list("mean" = -3, "sd" = 3))
       )
       
       res3 <- lapply(x, function(x){
-        find_splitted_ricker_coef(x$population)
+        prior$lK$param$mean <- log(max(x$population$y, na.rm = TRUE))
+        find_splitted_ricker_coef(x$population, prior = prior)
       }) %>% 
         do.call("rbind", .)
       

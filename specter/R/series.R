@@ -35,14 +35,14 @@ series_gapfill <- function(series) {
 
 series_transform <- function(series, trans){
   if(has_error(series)){
-    epsilon <- NA
+    epsilon <- NA_real_
     series <- bind_attributes(series, list(
       "epsilon" = epsilon
     ))
     return(series)
   }
   if(length(series$y) < 3){
-    epsilon <- NA
+    epsilon <- NA_real_
     series <- set_error(series, reason = "length(y) < 3")
     series <- bind_attributes(series, list(
       "epsilon" = epsilon
@@ -50,7 +50,7 @@ series_transform <- function(series, trans){
     return(series)
   }
   if(!isTRUE(var(series$y, na.rm = TRUE) > 0)){
-    epsilon <- NA
+    epsilon <- NA_real_
     series <- set_error(series, reason = "No variance")
     series <- bind_attributes(series, list(
       "epsilon" = epsilon
@@ -59,7 +59,7 @@ series_transform <- function(series, trans){
   }
 
   if(any(series$y < 0)){
-    epsilon <- NA
+    epsilon <- NA_real_
   } else {
     epsilon <- min(series$y[series$y>0]) / 2
     series$y <- ifelse(series$y == 0,series$y + epsilon, series$y)
