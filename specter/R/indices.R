@@ -87,5 +87,20 @@ log_mean <- function(x){
   if(any(x < 0) || all(x == 0)){
     return(NA_real_)
   }
-  mean(log(x + min(x[x > 0], na.rm = TRUE) / 2), na.rm = TRUE)
+  epsilon <- min(x[x>0]) / 2
+  x <- ifelse(x == 0, x + epsilon, x)
+  
+  mean(log(x), na.rm = TRUE)
 }
+
+inv_mean <- function(x){
+  if(any(x < 0) || all(x == 0)){
+    return(NA_real_)
+  }
+  epsilon <- min(x[x>0]) / 2
+  x <- ifelse(x == 0, x + epsilon, x)
+  
+  mean(1/x, na.rm = TRUE)
+}
+
+

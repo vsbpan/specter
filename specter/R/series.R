@@ -33,7 +33,9 @@ series_gapfill <- function(series) {
   series
 }
 
-series_transform <- function(series, trans){
+series_transform <- function(series, trans = c("log", "inverse")){
+  trans <- match.arg(trans)
+
   if(has_error(series)){
     epsilon <- NA_real_
     series <- bind_attributes(series, list(
@@ -57,14 +59,20 @@ series_transform <- function(series, trans){
     ))
     return(series)
   }
-
+  
   if(any(series$y < 0)){
     epsilon <- NA_real_
   } else {
     epsilon <- min(series$y[series$y>0]) / 2
     series$y <- ifelse(series$y == 0,series$y + epsilon, series$y)
-    series$y <- log(series$y)
   }
+  
+  if(trans == "log"){
+    series$y <- log(series$y)
+  } else if(trans == "inverse"){
+    series$y <- 1/(series$y)
+  }
+  
   series <- bind_attributes(series, list(
     "epsilon" = epsilon
   ))
@@ -223,6 +231,7 @@ series_attribute_rename <- function(series, name_append = NULL){
 }
 
 series_calc <- function(series, spec_method = c("lomb", "ndft"), 
+                        trans = c("log", "inverse"), 
                         name_append = NULL, drop_calc = FALSE, restore = FALSE){
   
   y_name <- "y_"
@@ -235,7 +244,7 @@ series_calc <- function(series, spec_method = c("lomb", "ndft"),
   
   res <- series %>% 
     series_gapfill() %>% 
-    series_transform() %>% 
+    series_transform(trans = trans) %>% 
     series_detrend() %>% 
     power_spec(method = spec_method) %>% 
     series_attribute_rename(name_append = name_append) %>% 

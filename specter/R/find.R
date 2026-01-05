@@ -1,4 +1,4 @@
-find_series_vars <- function(y, index = c("mean", "var", "cv", "log_mean"), name_append = "y_"){
+find_series_vars <- function(y, index = c("mean", "var", "cv", "log_mean", "inv_mean"), name_append = "y_"){
   y <- y[!is.na(y)]
   
   if(length(y) < 1){
@@ -81,13 +81,20 @@ find_spectrum_indices <- function(freq, power, y, index = c("mean_freq", "n_freq
   setNames(out, index)
 }
 
-find_splitted_attributes <- function(series, spec_method = c("lomb", "ndft"), 
-                                     split_method = c("half", "equal_segment"), len = NULL){
+find_splitted_attributes <- function(series, 
+                                     spec_method = c("lomb", "ndft"), 
+                                     trans = c("log", "inverse"), 
+                                     split_method = c("half", "equal_segment"), 
+                                     len = NULL){
   res <- series %>% 
-    series_calc(spec_method = spec_method, name_append = "whole_", drop_calc = TRUE, restore = TRUE) %>% 
+    series_calc(spec_method = spec_method, 
+                name_append = "whole_", 
+                trans = trans,
+                drop_calc = TRUE, 
+                restore = TRUE) %>% 
     series_split(method = split_method, len = len) %>% 
     lapply(function(x){
-      series_calc(x, spec_method = spec_method) %>% 
+      series_calc(x, spec_method = spec_method, trans = trans) %>% 
         collect_attributes()
     }) %>% 
     do.call("rbind", .)

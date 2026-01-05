@@ -29,11 +29,11 @@ d %>%
   vmisc::pb_par_lapply(
     function(x){
       res1 <- lapply(x, function(x){
-        find_splitted_attributes(x$population)
+        find_splitted_attributes(x$population, trans = "log")
       }) %>% 
         do.call("rbind", .)
       res2 <- lapply(x, function(x){
-        find_splitted_attributes(x$temperature)
+        find_splitted_attributes(x$temperature, trans = "inverse")
       }) %>% 
         do.call("rbind", .)
       
