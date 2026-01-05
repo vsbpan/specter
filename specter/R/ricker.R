@@ -173,9 +173,21 @@ coef_frame <- function(x, ...){
 }
 
 find_ricker_coef <- function(series, prior = NULL, name_append = NULL){
-  res <- ricker_fit(series, 
-             prior = prior) %>% 
-    coef_frame()
+  res <- tryCatch({
+    ricker_fit(series, 
+               prior = prior) %>% 
+      coef_frame()
+  }, error = function(e){
+    data.frame(
+      "estimate__r" = NA_real_,
+      "estimate__K" = NA_real_,
+      "estimate__sigma" = NA_real_,
+      "se__r" = NA_real_,
+      "se__K" = NA_real_,
+      "se__sigma" = NA_real_,
+      "converged" = FALSE
+    )
+  })
   names(res) <- gsub("__", ".", names(res))
   names(res) <- paste0(name_append, names(res))
   res
