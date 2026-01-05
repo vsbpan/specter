@@ -21,8 +21,9 @@ Suggests:
     cubature,
     mFD,
     lmodel2,
-    cooltools,
     matrixStats,
-    terra
+    terra,
+    taxadb,
+    taxizedb
 RoxygenNote: 7.3.2
 Encoding: UTF-8

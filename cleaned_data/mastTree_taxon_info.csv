@@ -1,4 +1,4 @@
-species,clean_name,search_string,unique_name,approximate_match,score,ott_id,is_synonym,flags,number_matches
+species,name_cleaned,search_string,unique_name,approximate_match,score,ott_id,is_synonym,flags,number_matches
 Sasa veitchii,Sasa veitchii,sasa veitchii,Sasa veitchii,FALSE,1,659160,FALSE,sibling_higher,1
 Quercus frainetto,Quercus frainetto,quercus frainetto,Quercus frainetto,FALSE,1,1065845,FALSE,,1
 Carya glabra,Carya glabra,carya glabra,Carya glabra,FALSE,1,899017,FALSE,,1
@@ -398,7 +398,7 @@ Garcinia epunctata,Garcinia epunctata,garcinia epunctata,Garcinia epunctata,FALS
 Harungana madagascariensis,Harungana madagascariensis,harungana madagascariensis,Harungana madagascariensis,FALSE,1,324228,FALSE,,1
 Hexalobus crispiflorus,Hexalobus crispiflorus,hexalobus crispiflorus,Hexalobus crispiflorus,FALSE,1,6284,FALSE,,1
 Holoptelea grandis,Holoptelea grandis,holoptelea grandis,Holoptelea grandis,FALSE,1,5519931,FALSE,,1
-Hua gaboni,Hua gabonii,hua gaboni,Hua gabonii,TRUE,0.909090936183929,481690,FALSE,,1
+Hua gaboni,Hua gabonii,hua gaboni,Hua gabonii,TRUE,0.909090936,481690,FALSE,,1
 Hylodendron gabunense,Hylodendron gabunense,hylodendron gabunense,Hylodendron gabunense,FALSE,1,169751,FALSE,,1
 Hymenocardia ulmoides,Hymenocardia ulmoides,hymenocardia ulmoides,Hymenocardia ulmoides,FALSE,1,660715,FALSE,,1
 Irvingia grandifolia,Irvingia grandifolia,irvingia grandifolia,Irvingia grandifolia,FALSE,1,3909974,FALSE,,1
@@ -752,7 +752,7 @@ Annona spraguei,Annona spraguei,annona spraguei,Annona spraguei,FALSE,1,446574,F
 Anthodon panamense,Anthodon panamense,anthodon panamense,Anthodon panamense,FALSE,1,5750110,FALSE,,1
 Apeiba membranacea,Apeiba membranacea,apeiba membranacea,Apeiba membranacea,FALSE,1,446596,FALSE,,1
 Apeiba tibourbou,Apeiba tibourbou,apeiba tibourbou,Apeiba tibourbou,FALSE,1,1010139,FALSE,,1
-Ardisia bartletii,Ardisia bartlettii,ardisia bartletii,Ardisia bartlettii,TRUE,0.944444417953491,446594,FALSE,sibling_higher,3
+Ardisia bartletii,Ardisia bartlettii,ardisia bartletii,Ardisia bartlettii,TRUE,0.944444418,446594,FALSE,sibling_higher,3
 Ardisia standleyana,Ardisia standleyana,ardisia standleyana,Ardisia standleyana,FALSE,1,781940,FALSE,sibling_higher,1
 Aristolochia tonduzii,Aristolochia tonduzii,aristolochia tonduzii,Aristolochia tonduzii,FALSE,1,632538,FALSE,,1
 Aspidosperma spruceanum,Aspidosperma spruceanum,aspidosperma spruceanum,Aspidosperma spruceanum,FALSE,1,1022998,FALSE,,1
