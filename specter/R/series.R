@@ -33,7 +33,7 @@ series_gapfill <- function(series) {
   series
 }
 
-series_transform <- function(series, trans = c("log", "inverse")){
+series_transform <- function(series, trans = c("log", "inverse", "identity")){
   trans <- match.arg(trans)
 
   if(has_error(series)){
@@ -71,7 +71,7 @@ series_transform <- function(series, trans = c("log", "inverse")){
     series$y <- log(series$y)
   } else if(trans == "inverse"){
     series$y <- 1/(series$y)
-  }
+  } # Identity does nothing
   
   series <- bind_attributes(series, list(
     "epsilon" = epsilon
@@ -231,7 +231,7 @@ series_attribute_rename <- function(series, name_append = NULL){
 }
 
 series_calc <- function(series, spec_method = c("lomb", "ndft"), 
-                        trans = c("log", "inverse"), 
+                        trans = c("log", "inverse", "identity"), 
                         name_append = NULL, drop_calc = FALSE, restore = FALSE){
   
   y_name <- "y_"

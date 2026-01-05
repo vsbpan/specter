@@ -33,7 +33,7 @@ d %>%
       }) %>% 
         do.call("rbind", .)
       res2 <- lapply(x, function(x){
-        find_splitted_attributes(x$temperature, trans = "inverse")
+        find_splitted_attributes(x$temperature, trans = "identity")
       }) %>% 
         do.call("rbind", .)
       

@@ -83,7 +83,7 @@ find_spectrum_indices <- function(freq, power, y, index = c("mean_freq", "n_freq
 
 find_splitted_attributes <- function(series, 
                                      spec_method = c("lomb", "ndft"), 
-                                     trans = c("log", "inverse"), 
+                                     trans = c("log", "inverse", "identity"), 
                                      split_method = c("half", "equal_segment"), 
                                      len = NULL){
   res <- series %>% 
