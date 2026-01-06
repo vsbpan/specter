@@ -50,7 +50,29 @@ d_pop %>%
 
 
 
+d_pop <- d_pop %>% 
+  filter(!error) %>% 
+  mutate(
+    p_missing = y_missing / y_n,
+    periodic = whole_n_freq > 0
+  ) %>% 
+  dplyr::select(
+    ID, part, x_length, y_mean, y_log_mean, p_missing, periodic, mean_freq, x_median, x_min, x_max
+  ) %>% 
+  rename(
+    pop_freq = mean_freq
+  ) %>% 
+  filter(
+    x_length > 5 & p_missing < 0.2
+  ) %>% 
+  group_by(ID) %>% 
+  filter(
+    n() == 2
+  ) %>% 
+  ungroup()
 
-
-
+d_pop <- d_pop %>% left_join(
+  d_meta %>% 
+    mutate(ID = mainid)
+)
 

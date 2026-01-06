@@ -94,7 +94,7 @@ series_detrend <- function(series){
     })
     m_loess <- tryCatch({
       stats::loess(y~x, data = data.frame("x" = series$x, "y" = series$y), 
-                   span = 0.5)
+                   span = 0.75)
     }, error = function(e){
       cli::cli_warn(
         c(e$message, "Returning NAs")
