@@ -128,3 +128,15 @@ itis2rank <- function(x){
   out[!is.na(x)] <- taxadb::filter_id(x[!is.na(x)])$taxonRank
   out
 }
+
+# Only works for plants
+genus2family <- function(x){
+  res <- rtrees::classifications %>% 
+    filter(taxon == "plant") %>% 
+    filter(genus %in% x)
+  left_join(
+    data.frame("genus" = as.character(x)),
+    res,
+    by = "genus"
+  )$family
+}

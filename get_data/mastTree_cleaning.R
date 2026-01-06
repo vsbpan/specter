@@ -109,6 +109,19 @@ d <- d %>%
   )
 d <- d %>% dplyr::select(-c(lon, lat))
 
+
+d_meta <- d_meta %>% 
+  mutate(
+    genus = ifelse(is.na(genus), gsub(" .*", "",taxonname), genus),
+    family = ifelse(genus == "Dipterocarpaceae", "Dipterocarpaceae", family),
+    genus = ifelse(genus == "Dipterocarpaceae", NA, genus)
+  )
+
+d_meta <- d_meta %>% 
+  mutate(
+    family = ifelse(is.na(family), genus2family(genus), family)
+  )
+
 write_csv(d_meta, "cleaned_data/mastTree_meta_cleaned.csv")
 write_csv(d, "cleaned_data/mastTree_series_cleaned.csv")
 

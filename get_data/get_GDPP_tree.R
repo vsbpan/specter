@@ -12,6 +12,12 @@ z <- read_csv("cleaned_data/GPDD_taxon_info.csv")
 
 tre <- tol_induced_subtree(ott_ids = unique(na.omit(z$ott_id)))
 
+tre$tip_og_lab <- tre$tip.label
+tre$tip.label <- gsub(".*ott","", tre$tip.label)
+tre$edge.length <- rep(1, nrow(tre$edge)) # No branch length available, assume each node is unit 1. 
+tre <- phytools::force.ultrametric(tre) # Make the present day tips be the same length from the root
+tre$tip_og_lab <- rotl::strip_ott_ids(tre$tip_og_lab)
+
 # ape::write.tree(tre, "cleaned_data/GPDD_tree.tre")
 
 tre <- ape::read.tree("cleaned_data/GPDD_tree.tre")
