@@ -49,8 +49,10 @@ ricker_sim <- function(r, K, N0, sigma, t = 100, as_series = FALSE, seed = NULL)
     set.seed(seed)
   }
   
+  rand <- rnorm(t - 1, 0, sigma)
+  
   for(i in seq_len(t - 1)){
-    out[i + 1] <- out[i] * exp(r * (1 - out[i] / K) + rnorm(1, 0, sigma)) 
+    out[i + 1] <- out[i] * exp(r * (1 - out[i] / K) + rand[i]) 
   }
   
   if(as_series){
