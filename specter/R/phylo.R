@@ -140,3 +140,13 @@ genus2family <- function(x){
     by = "genus"
   )$family
 }
+
+
+# Replace NAs with unique taxon classification
+assign_unknown_classification <- function(classification, taxon){
+  r <- deparse1(substitute(classification))
+ifelse(
+  is.na(classification),
+  paste0(taxon, "__unknown_", r),
+  classification)
+}

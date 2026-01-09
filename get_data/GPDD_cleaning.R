@@ -169,6 +169,29 @@ d <- d %>%
   dplyr::select(-has_negative) %>% 
   ungroup()
 
+d_cleaned <- d_cleaned %>% 
+  mutate(
+    class = ifelse(name_cleaned == "Insecta", "Insecta", class)
+  )
+
+# lat & lon at 0,0
+ids <- unique(d_cleaned %>% filter(lat == 0 & lon == 0) %>% .$mainid)
+d <- d %>% 
+  mutate(
+    air_temp = ifelse(
+      mainid %in% ids,
+      NA_real_,
+      air_temp
+    )
+  ) 
+
+d_cleaned <- d_cleaned %>% 
+  mutate(
+    lat = ifelse(mainid %in% ids, NA_real_, lat),
+    lon = ifelse(mainid %in% ids, NA_real_, lon)
+  )
+
+
 # write_csv(d_cleaned, "cleaned_data/GPDD_meta_cleaned.csv")
 # write_csv(d, "cleaned_data/GPDD_series_cleaned.csv")
 
