@@ -25,11 +25,12 @@ evalq({
     filter(!error) %>% 
     mutate(
       p_missing = y_missing / y_n,
-      periodic = whole_n_freq > 0
+      periodic = whole_n_freq > 0,
+      y_min = ifelse(y_min == 0, epsilon, y_min)
     ) %>% 
     dplyr::select(
       ID, part, x_length, y_mean, y_log_mean, p_missing, periodic, 
-      mean_freq, x_median, x_min, x_max, whole_x_length, whole_x_min, whole_x_max
+      mean_freq, x_median, x_min, x_max, whole_x_length, whole_x_min, whole_x_max, y_min
     ) %>% 
     rename(
       pop_freq = mean_freq
@@ -70,7 +71,10 @@ evalq({
       temp_log_freq_mean = mean(temp_log_freq),
       temp_log_freq_offset = temp_log_freq - temp_log_freq_mean,
       estimate.r_mean = mean(estimate.r),
-      estimate.r_offset = estimate.r - estimate.r_mean
+      estimate.r_offset = estimate.r - estimate.r_mean,
+      y_min_log = log(y_min),
+      y_min_log_mean = mean(y_min_log),
+      y_min_log_offeset = y_min_log - y_min_log_mean
     ) %>% 
     ungroup() %>% 
     mutate(
@@ -87,7 +91,9 @@ evalq({
       x_length_log = log(x_length),
       whole_x_length_log = log(whole_x_length),
       x_length_log_scale = as.numeric(scale(x_length_log)),
-      whole_x_length_log_scale = as.numeric(scale(whole_x_length_log))
+      whole_x_length_log_scale = as.numeric(scale(whole_x_length_log)),
+      y_min_log_mean_scale = as.numeric(scale(y_min_log_mean)),
+      y_min_log_offeset_scale = as.numeric(scale(y_min_log_offeset))
     )
 }, envir = env)
 
@@ -264,6 +270,8 @@ d_GPDD2 <- d_GPDD %>%
                   inv_temp_mean_scale,
                   estimate.r_offset_scale,
                   estimate.r_mean_scale,
+                  y_min_log_mean_scale,
+                  y_min_log_offeset_scale,
                   temp_log_freq_offset_scale, 
                   temp_log_freq_mean_scale), 
                 ~ !is.na(.))) %>% 

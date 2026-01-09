@@ -1,4 +1,4 @@
-find_series_vars <- function(y, index = c("mean", "var", "cv", "log_mean", "inv_mean"), name_append = "y_"){
+find_series_vars <- function(y, index = c("mean", "var", "cv", "log_mean", "inv_mean", "min", "max"), name_append = "y_"){
   y <- y[!is.na(y)]
   
   if(length(y) < 1){

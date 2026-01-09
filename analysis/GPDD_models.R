@@ -13,6 +13,8 @@ get_prior(
     estimate.r_mean_scale +
     temp_log_freq_offset_scale + 
     temp_log_freq_mean_scale + 
+    y_min_log_mean_scale + 
+    y_min_log_offeset_scale + 
     (1|locationid) + 
     (1|datasourceid) + 
     (1|class/family/species) +
@@ -144,7 +146,13 @@ prior1.1 <- c(
   set_prior("normal(0, 1)", class = "b", coef = "x_median_offset_scale", resp = "estimateroffsetscale"),
   set_prior("normal(0, 1)", class = "b", resp = "estimateroffsetscale"),
   set_prior("normal(0, 1)", class = "Intercept", resp = "estimateroffsetscale"),
-  set_prior("normal(0, 1)", class = "sigma", resp = "estimateroffsetscale")
+  set_prior("normal(0, 1)", class = "sigma", resp = "estimateroffsetscale"),
+  # yminlogoffesetscale
+  set_prior("normal(0, 1)", class = "sd", resp = "yminlogoffesetscale"),
+  set_prior("normal(0, 1)", class = "b", coef = "x_median_offset_scale", resp = "yminlogoffesetscale"),
+  set_prior("normal(0, 1)", class = "b", resp = "yminlogoffesetscale"),
+  set_prior("normal(0, 1)", class = "Intercept", resp = "yminlogoffesetscale"),
+  set_prior("normal(0, 1)", class = "sigma", resp = "yminlogoffesetscale")
 )
 
 
@@ -161,6 +169,8 @@ get_prior(
       estimate.r_mean_scale +
       temp_log_freq_offset_scale + 
       temp_log_freq_mean_scale + 
+      y_min_log_mean_scale + 
+      y_min_log_offeset_scale + 
       (1|locationid) + 
       (1|datasourceid) + 
       (1|class/family/species) +
@@ -189,6 +199,16 @@ get_prior(
     ) + 
     bf(
       estimate.r_offset_scale ~ 
+        x_median_offset_scale +
+        x_length_log_scale + 
+        (1|locationid) + 
+        (1|datasourceid) + 
+        (1|class/family/species) +
+        (1|ID),
+      family = gaussian()
+    )  + 
+    bf(
+      y_min_log_offeset_scale ~ 
         x_median_offset_scale +
         x_length_log_scale + 
         (1|locationid) + 
@@ -216,6 +236,8 @@ GPDD_m5 <- brm(
       estimate.r_mean_scale +
       temp_log_freq_offset_scale + 
       temp_log_freq_mean_scale + 
+      y_min_log_mean_scale + 
+      y_min_log_offeset_scale + 
       (1|locationid) + 
       (1|datasourceid) + 
       (1|class/family/species) +
@@ -244,6 +266,16 @@ GPDD_m5 <- brm(
     ) + 
     bf(
       estimate.r_offset_scale ~ 
+        x_median_offset_scale +
+        x_length_log_scale + 
+        (1|locationid) + 
+        (1|datasourceid) + 
+        (1|class/family/species) +
+        (1|ID),
+      family = gaussian()
+    )  + 
+    bf(
+      y_min_log_offeset_scale ~ 
         x_median_offset_scale +
         x_length_log_scale + 
         (1|locationid) + 

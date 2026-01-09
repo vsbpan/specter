@@ -1,4 +1,3 @@
-
 source("get_data/data_prep.R")
 library(brms)
 
@@ -83,13 +82,22 @@ auto_plot <- function(model, term, response, raw_term = gsub("_scale", "", term)
     theme_bw(base_size = 9)
 }
 
+g0 <- auto_plot(GPDD_m5, 
+                term = "y_min_log_offeset_scale", 
+                response = "pop_freq", 
+                group = "ID",
+                df = d_GPDD2, 
+                term_sd_df = d_GPDD,
+                x_lab = tex("Change in log min. density (ln(dens.))"),
+                annotate = "Population density")
+
 g1 <- auto_plot(GPDD_m5, 
                 term = "inv_temp_offset_scale", 
                 response = "pop_freq", 
                 group = "ID",
                 df = d_GPDD2, 
                 term_sd_df = d_GPDD,
-                x_lab = tex("Change in inverse temperature ($K^{-1}$)"),
+                x_lab = tex("Change in inverse temp. ($K^{-1}$)"),
                 annotate = "Population density") + 
   scale_x_continuous(labels = fancy_scientific) +
   annotation_custom(grid::textGrob("warmer", 0.025, 1 - 0.95, just = "left", 
@@ -121,7 +129,7 @@ g4 <- auto_plot(mast_m5,
                 group = "ID",
                 df = d_mast2, 
                 term_sd_df = d_mast,
-                x_lab = tex("Change in inverse temperature ($K^{-1}$)"),
+                x_lab = tex("Change in inverse temp. ($K^{-1}$)"),
                 annotate = "Masting density") + 
   scale_x_continuous(labels = fancy_scientific) + 
   annotation_custom(grid::textGrob("warmer", 0.025, 1 - 0.95, just = "left", 
@@ -137,6 +145,8 @@ g5 <- auto_plot(mast_m5,
                 term_sd_df = d_mast,
                 x_lab = tex("Change in log temp. freq. (ln($year^{-1}$))"),
                 annotate = "Masting density")
+
+
 
 
 compute_mediation <- function(model, exposure, mediator, response, 
@@ -167,7 +177,8 @@ compute_mediation <- function(model, exposure, mediator, response,
 
 compute_mediation(GPDD_m5, 
                   exposure = "x_median_offset_scale", 
-                  mediator = c("estimate.r_offset_scale", "inv_temp_offset_scale", "temp_log_freq_offset_scale"),
+                  mediator = c("estimate.r_offset_scale", "inv_temp_offset_scale", 
+                               "temp_log_freq_offset_scale", "y_min_log_offeset_scale"),
                   response = "pop_freq",
                   exposure_sd_df = d_GPDD) %>% 
   cbind(
@@ -185,69 +196,85 @@ compute_mediation(GPDD_m5,
   ) -> mediator_df
 
 
-mediator_df %>% 
-  mutate(
-    beta = (exp(beta * 10) - 1) * 100,
-    mediator = case_when(
-      mediator == "inv_temp_offset_scale" ~ "Inv. temp.",
-      mediator == "temp_log_freq_offset_scale" ~ "Temp. freq.",
-      mediator == "estimate.r_offset_scale" ~ "Growth rate",
-    )
-  ) %>% 
-  ggplot(aes(x = mediator, y = beta)) + 
-  geom_hline(aes(yintercept = 0), linewidth = 0.6, linetype = 2, color = "grey") + 
-  tidybayes::stat_halfeye(
-    aes(fill = sig, color = sig), 
-    stroke = 0.3, interval_size_range = c(0.3, 0.8), 
-    show.legend = FALSE
-  ) +
-  scale_fill_manual(values = c("#4682B433","#4682B4CC")) + 
-  scale_color_manual(values = c("grey","black")) + 
-  coord_flip() + 
-  theme_bw(base_size = 9) + 
-  facet_wrap(~type, ncol = 1, scales = "free") + 
-  theme(
-    axis.text.y = element_text(angle = 45, hjust = 0.5),
-    axis.title.y = element_blank(),
-    axis.title.x = element_text(hjust = 1), 
-    strip.background = element_blank()
-  ) + 
-  labs(x = "Mediator", y = "Mediation (% change in freq. / decade)") -> g6;g6
+foo <- function(mediator_df, annotate){
+  mediator_df %>% 
+    mutate(
+      beta = (exp(beta * 10) - 1) * 100,
+      mediator = case_when(
+        mediator == "inv_temp_offset_scale" ~ "Inv. temp.",
+        mediator == "temp_log_freq_offset_scale" ~ "Temp. freq.",
+        mediator == "estimate.r_offset_scale" ~ "Growth rate",
+        mediator == "y_min_log_offeset_scale" ~ "Log min dens."
+      )
+    ) %>% 
+    ggplot(aes(x = mediator, y = beta)) + 
+    geom_hline(aes(yintercept = 0), linewidth = 0.6, linetype = 2, color = "grey") + 
+    tidybayes::stat_halfeye(
+      aes(fill = sig, color = sig), 
+      stroke = 0.3, interval_size_range = c(0.3, 0.8), 
+      show.legend = FALSE
+    ) +
+    scale_fill_manual(values = c("#4682B433","#4682B4CC")) + 
+    scale_color_manual(values = c("grey","black")) + 
+    coord_flip() + 
+    theme_bw(base_size = 9) + 
+    #facet_wrap(~type, ncol = 2, scales = "free") + 
+    theme(
+      axis.text.y = element_text(angle = 45, hjust = 0.5),
+      axis.title.y = element_blank(),
+      axis.title.x = element_text(hjust = 1), 
+      strip.background = element_blank()
+    ) + 
+    annotation_custom(grid::textGrob(annotate, 0.025, 0.95, just = "left", 
+                                     gp = grid::gpar(fontsize = 8))) + 
+    labs(x = "Mediator", y = "Mediation (% change in freq. / decade)")
+}
+
+
+foo(mediator_df %>% 
+      filter(type == "Population density"), 
+    "Population density") -> g6;g6
+
+foo(mediator_df %>% 
+      filter(type == "Masting density"),
+    "Masting density") -> g7;g7
 
 
 
 library(patchwork)
 
-(g4 + 
-    labs(x = "", tag = "A") + 
-    theme(axis.title.x = element_blank(), 
-          plot.tag.position = c(0.18, 0.94))) + 
-  (g5 + 
-     labs(x = "", y = "", tag = "B") + 
-     theme(axis.title.x = element_blank(), 
-           axis.title.y = element_blank(),
-           axis.text.y = element_blank(),
-           plot.tag.position = c(0.04, 0.94))) + 
-  (g6 + 
-     labs(tag = "C") + 
-     theme(plot.tag.position = c(0.05, 0.94))) + 
-  (g1 +
-     labs(tag = "D") + 
-     theme(plot.tag.position = c(0.18, 1.04))) + 
+(g0 + 
+    labs() + 
+    theme()) + 
+  (g1 + 
+     labs(y = "") + 
+     theme(axis.title.y = element_blank(),
+           axis.text.y = element_blank())) + 
   (g2 + 
-     labs(y = "", tag = "E") +
+     labs(y = "") + 
+     theme(axis.title.y = element_blank(),
+           axis.text.y = element_blank())) + 
+  (g6) +
+  (g3 +
+     labs() + 
+     theme()) + 
+  (g4 + 
+     labs(y = "") +
      theme(axis.title.y = element_blank(),
            axis.text.y = element_blank(), 
-           plot.tag.position = c(0.04, 1.04),
            axis.title.x = element_text(hjust = 0))) + 
-  (g3 + 
-     labs(y = "", tag = "F") + 
+  (g5 + 
+     labs(y = "") + 
      theme(axis.title.y = element_blank(), 
-           axis.text.y = element_blank(),
-           plot.tag.position = c(0.05, 1.02))) + 
-  patchwork::plot_layout(nrow = 2) -> g_final;g_final
+           axis.text.y = element_blank())) + 
+  (g7) + 
+  patchwork::plot_layout(nrow = 2) + 
+  patchwork::plot_annotation(tag_levels = "A") & 
+  theme(
+    plot.tag.position = c(0.035, 1.04)
+  ) -> g_final;g_final
 
 
-ggsave("graphs/mediator_figure.pdf", g_final, dpi = 600, width = 7, height = 4.5, bg = "white")
-ggsave("graphs/mediator_figure.png", g_final, dpi = 600, width = 7, height = 4.5, bg = "white")
+ggsave("graphs/mediator_figure.pdf", g_final, dpi = 600, width = 9, height = 4.5, bg = "white")
+ggsave("graphs/mediator_figure.png", g_final, dpi = 600, width = 9, height = 4.5, bg = "white")
 
