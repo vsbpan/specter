@@ -117,7 +117,7 @@ d_res2 %>%
     score = abs(score_1) - abs(score_2) # The higher the score, the worse NDFT is over Lomb
   ) -> d_res4
 
-d_res2 %>% 
+d_res3 %>% 
   group_by(k, N, p) %>% 
   summarise(
     score = mean(score, na.rm = TRUE)
@@ -129,10 +129,15 @@ d_res2 %>%
   filter(
     k < 50 / (2 * pi)
   ) %>% 
+  mutate(
+    p2 = sprintf("Missing data: %s%s", p * 100, "%")
+  ) %>% 
   ggplot(aes(x = N, y = freq, fill = score)) + 
   scale_y_log10() + 
+  geom_tile() + 
   geom_tile(
-    aes(color = include)
+    aes(color = include),
+    show.legend = FALSE
   ) + 
   # geom_line(
   #   aes(
@@ -148,17 +153,20 @@ d_res2 %>%
   geom_line(
     aes(x = N, y = 1/2)
   ) + 
-  facet_wrap(~p) + 
+  facet_wrap(~p2) + 
   scale_color_discrete(
     type = c("#00000000","grey50")
   ) + 
   scale_fill_gradient2(low = "#B2182B", 
                        mid = "grey80", 
-                       high = "#2166AC") + 
+                       high = "#2166AC", 
+                       midpoint = 0) + 
   theme_minimal() + 
   theme(
     strip.background = element_blank()
-  ) 
+  )  + 
+  labs(x = "Series length", y = "True frequency", 
+       fill = "Log ratio")
 
 
 
