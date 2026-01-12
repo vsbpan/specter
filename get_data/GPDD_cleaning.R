@@ -192,6 +192,9 @@ d_cleaned <- d_cleaned %>%
   )
 
 
+d_cleaned <- d_cleaned %>% 
+  dplyr::select(mainid, datasourceid, locationid, taxonname, lon, lat, reference, ott_id:taxon_rank)
+
 # write_csv(d_cleaned, "cleaned_data/GPDD_meta_cleaned.csv")
 # write_csv(d, "cleaned_data/GPDD_series_cleaned.csv")
 
