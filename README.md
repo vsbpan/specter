@@ -41,8 +41,8 @@ The custom code written for this project are bundled as a pseudo simulated packa
     -   `GPDD_cleaning.R` stores code for cleaning the GPDD data, including adding taxonomic and temperature information.
     -   `mastTree_cleaning.R` stores code for cleaning the MASTTREE+ data, including adding taxonomic and temperature information.
 -   `raw_data/` stores raw data
-    -   `GPDD_*.csv` Raw data downloaded from the 2010 release of the GPDD database from Prebdergast et al. 2010. See the data source for column definitions <https://knb.ecoinformatics.org/view/doi:10.5063/F1BZ63Z8>
-    -   `MASTREEplus_2024-06-26_V2.csv` Raw data downloaded from the V2 2024 release of the MASTTREE+ database from Hacket-Pain et al. 2022. See the data source for column definitions <https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.16130>
+    -   `GPDD_*.csv` Raw data downloaded from the 2010 release of the GPDD database from Prebdergast et al. 2010. See the data [source](https://knb.ecoinformatics.org/view/doi:10.5063/F1BZ63Z8) for column definitions.
+    -   `MASTREEplus_2024-06-26_V2.csv` Raw data downloaded from the V2 2024 release of the MASTTREE+ database from Hacket-Pain et al. 2022. See the data [source](https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.16130) for column definitions.
 -   `graphs/` stores graphs. Invisible to GitHub.
 -   `invisible/` stores large files invisible to GitHub (e.g., raw climate rasters).
 -   `specter/` source code for simulated package *specter*.
