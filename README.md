@@ -136,7 +136,7 @@ The custom code written for this project are bundled as a pseudo simulated packa
     -   **part**: segment identifier
     -   **estimate.\***: MAP Ricker parameter estimate from fitting the Ricker model to the segment
     -   **se.\***: MAP Ricker parameter estimate standard error from fitting the Ricker model to the segment
-    -   **converged**: RUE or FALSE the Ricker model fitted to the segment converged
+    -   **converged**: TRUE or FALSE the Ricker model fitted to the segment converged
 
 ### SessionInfo
 
