@@ -243,7 +243,7 @@ foo(mediator_df %>%
 
 library(patchwork)
 
-(g0 + 
+(g3 + 
     labs() + 
     theme()) + 
   (g1 + 
@@ -255,7 +255,7 @@ library(patchwork)
      theme(axis.title.y = element_blank(),
            axis.text.y = element_blank())) + 
   (g6) +
-  (g3 +
+  (g0 +
      labs() + 
      theme()) + 
   (g4 + 
