@@ -18,7 +18,7 @@ hypothesis_draws(GPDD_m1, GPDD_m2, GPDD_m3, GPDD_m4,
   mutate(
     x = case_when(
       model == "GPDD_m1" ~ "Overall",
-      model == "GPDD_m2" ~ "Periodic",
+      model == "GPDD_m2" ~ "Cyclic",
       model == "GPDD_m3" ~ "No~missing",
       model == "GPDD_m4" ~ as.character(vmisc::tex("Length $\\geq 20$"))
     )
@@ -37,7 +37,7 @@ hypothesis_draws(GPDD_m1, GPDD_m2, GPDD_m3, GPDD_m4,
   geom_text(
     data = data.frame(
       "x" = c("Overall",
-              "Periodic",
+              "Cyclic",
               "No~missing",
               as.character(vmisc::tex("Length $\\geq 20$"))), 
       "y" = 5,
@@ -103,7 +103,7 @@ hypothesis_draws(mast_m1, mast_m2, mast_m3, mast_m4,
   mutate(
     x = case_when(
       model == "mast_m1" ~ "Overall",
-      model == "mast_m2" ~ "Periodic",
+      model == "mast_m2" ~ "Cyclic",
       model == "mast_m3" ~ "No~missing",
       model == "mast_m4" ~ as.character(vmisc::tex("Length $\\geq 20$"))
     )
@@ -115,7 +115,7 @@ hypothesis_draws(mast_m1, mast_m2, mast_m3, mast_m4,
   )) +
   geom_hline(aes(yintercept = 0), linewidth = 0.6, linetype = 2, color = "grey") + 
   tidybayes::stat_halfeye(
-    aes(fill = x == "Periodic", color = x == "Periodic"), 
+    aes(fill = x == "Cyclic", color = x == "Cyclic"), 
     stroke = 0.3, 
     interval_size_range = c(0.3, 0.8), 
     show.legend = FALSE
@@ -129,7 +129,7 @@ hypothesis_draws(mast_m1, mast_m2, mast_m3, mast_m4,
   geom_text(
     data = data.frame(
       "x" = c("Overall",
-              "Periodic",
+              "Cyclic",
               "No~missing",
               as.character(vmisc::tex("Length $\\geq 20$"))), 
       "y" = 6,
