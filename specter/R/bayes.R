@@ -22,3 +22,11 @@ hypothesis_draws <- function(...,
     }) %>% 
     do.call("rbind", .) 
 }
+
+
+compute_r2 <- function(y, x, beta, trans = identity){
+  z <- outer(x, beta)
+  y_hat <- trans(z)
+  
+  matrixStats::colVars(y_hat) / var(y)
+}

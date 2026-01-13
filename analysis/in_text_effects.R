@@ -21,6 +21,24 @@ hypothesis_draws(GPDD_m1, hypothesis = "x_median_offset_scale = 0") %>%
   {(. - 1) * 100} %>% 
   summarise_vec()
 
+# R2 of time within time series (GPDD)
+d_GPDD %>%
+  group_by(ID) %>%
+  mutate(
+    y = (pop_freq / mean(pop_freq) - 1) * 100
+  ) %>% 
+  ungroup() %>% 
+  transmute(
+    x = x_median_offset_scale,
+    y = y
+  ) %>% 
+  with(
+    compute_r2(y = y, x = x, 
+               beta = sample(hypothesis_draws(GPDD_m1,hypothesis = "x_median_offset_scale = 0")$H1, 1000), 
+               trans = function(z) (exp(z) - 1) * 100)
+  ) %>% 
+  summarise_vec()
+
 
 # Overall effect for masting frequency
 hypothesis_draws(mast_m1, hypothesis = "x_median_offset_scale = 0") %>% 
@@ -28,6 +46,24 @@ hypothesis_draws(mast_m1, hypothesis = "x_median_offset_scale = 0") %>%
   {. / sd(d_mast$x_median_offset) * 10} %>% 
   exp() %>% 
   {(. - 1) * 100} %>% 
+  summarise_vec()
+
+# R2 of time within time series (masting)
+d_mast %>%
+  group_by(ID) %>%
+  mutate(
+    y = (pop_freq / mean(pop_freq) - 1) * 100
+  ) %>% 
+  ungroup() %>% 
+  transmute(
+    x = x_median_offset_scale,
+    y = y
+  ) %>% 
+  with(
+    compute_r2(y = y, x = x, 
+               beta = sample(hypothesis_draws(mast_m1,hypothesis = "x_median_offset_scale = 0")$H1, 1000), 
+               trans = function(z) (exp(z) - 1) * 100)
+  ) %>% 
   summarise_vec()
 
 
