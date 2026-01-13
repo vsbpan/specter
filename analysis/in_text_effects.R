@@ -39,6 +39,11 @@ d_GPDD %>%
   ) %>% 
   summarise_vec()
 
+# Long GPDD time series standardized effect size
+hypothesis_draws(GPDD_m4, hypothesis = "x_median_offset_scale = 0")$H1 %>% 
+  {. / sd(d_GPDD$x_median_offset) * mean(d_GPDD[d_GPDD$x_length >= 20, ]$whole_x_length)} %>% 
+  {. / 0.3} %>% 
+  summarise_vec()
 
 # Overall effect for masting frequency
 hypothesis_draws(mast_m1, hypothesis = "x_median_offset_scale = 0") %>% 
@@ -64,6 +69,13 @@ d_mast %>%
                beta = sample(hypothesis_draws(mast_m1,hypothesis = "x_median_offset_scale = 0")$H1, 1000), 
                trans = function(z) (exp(z) - 1) * 100)
   ) %>% 
+  summarise_vec()
+
+
+# Long MASTTREE+ time series standardized effect size
+hypothesis_draws(mast_m4, hypothesis = "x_median_offset_scale = 0")$H1 %>% 
+  {. / sd(d_mast$x_median_offset) * mean(d_mast[d_mast$x_length >= 20, ]$whole_x_length)} %>% 
+  {. / 0.3} %>% 
   summarise_vec()
 
 
