@@ -5,8 +5,6 @@ vmisc::load_all2("specter")
 d <- read_csv("cleaned_data/GPDD_series_cleaned.csv")
 d_meta <- read_csv("cleaned_data/GPDD_meta_cleaned.csv")
 
-## Need to throw out morbillivirus
-
 
 d %>% 
   group_by(mainid) %>% 

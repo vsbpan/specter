@@ -115,7 +115,7 @@ The custom code written for this project are bundled as a pseudo simulated packa
     -   **Whole_epislon** or **epsilon**: half of the minimum non-zero value in the series or segment. Used in place of zero.
     -   **whole_n_freq** or **n_freq**: the number of spectral peaks that is significant at the $\alpha = 0.05$ level in a the series or segment
     -   **whole_y_mean** or **y_mean**: the arithmetic mean of the series or segment value.
-    -   **whole_y_log_mean** or **y_log_mean**: the arithmetic mean of logrithm of the series or segment value.
+    -   **whole_y_log_mean** or **y_log_mean**: the arithmetic mean of logarithm of the series or segment value.
     -   **whole_y_inv_mean** or **y_inv_mean**: the arithmetic mean of the inverse of the series or segment value.
     -   **whole_x_min** or **x_min**: the minimum series or segment year.
     -   **whole_x_max** or **x_max**: the maximum series or segment year.
