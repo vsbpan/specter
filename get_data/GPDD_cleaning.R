@@ -35,7 +35,7 @@ d_cleaned <- d_meta %>%
   ) %>% 
   dplyr::left_join(
     d_loc %>% 
-      dplyr::select(locationid, exactname, longitudedegrees, latitudedegrees, spatialaccuracy, area, altitude),
+      dplyr::select(locationid, exactname, longdd, latdd, spatialaccuracy, area, altitude),
     by = "locationid"
   ) %>% 
   dplyr::left_join(
@@ -44,8 +44,8 @@ d_cleaned <- d_meta %>%
     by = "datasourceid"
   ) %>% 
   dplyr::rename(
-    lon = longitudedegrees,
-    lat = latitudedegrees
+    lon = longdd,
+    lat = latdd
   )
 
 allowed_dimensions <- c("density", "count", "mean count", "count (estimated)", "mean concentration", "mean density")
