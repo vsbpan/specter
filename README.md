@@ -99,6 +99,7 @@ The custom code written for this project are bundled as a pseudo simulated packa
     -   **study_id**: data reference identifier
     -   **variable**: categorical classification of the measured series value variable. Options limited to: code, flower, fruit, seed, pollen, total reproduction organs
     -   **unit**: unit of the series value
+    -   **site_number**: unique site identifier
     -   **lon**: longitude in degree decimals
     -   **lat**: latitude in degree decimals
     -   **taxonname**: the name key from the MASTTREE+ data

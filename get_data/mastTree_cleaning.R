@@ -23,7 +23,7 @@ d <- read_csv("raw_data/MASTREEplus_2024-06-26_V2.csv") %>%
 
 d_meta <- d %>% 
   dplyr::select(
-    lon, lat, series_id, study_id, variable, species, unit
+    lon, lat, series_id, study_id, variable, species, unit, site_number
   ) %>% 
   unique()
 
