@@ -1,6 +1,6 @@
-## README for The Frequency of Population and Masting Fluctuations Is Increasing Globally
+## README for "The Frequency of Population and Masting Fluctuations Is Increasing Globally"
 
-#### Vincent S. Pan, Peter Rothstein, Kadeem J. Gilbert
+#### Vincent S. Pan, Peter E. Rothstein, Kadeem J. Gilbert
 
 ### Table of Contents
 
