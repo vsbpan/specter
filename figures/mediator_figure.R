@@ -81,7 +81,8 @@ auto_plot <- function(model, term, response, raw_term = gsub("_scale", "", term)
     annotation_custom(grid::textGrob(hyp_lab, 1 - 0.025, 0.95, just = "right", 
                                      gp = grid::gpar(fontsize = 8))) + 
     labs(x = x_lab, y = "% change in frequency") + 
-    theme_bw(base_size = 9)
+    theme_bw(base_size = 9) + 
+    scale_y_continuous(limits = c(-45, 45))
 }
 
 g0 <- auto_plot(GPDD_m5, 
