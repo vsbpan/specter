@@ -63,7 +63,7 @@ d_mast %>%
   #coord_fixed(1.3) + 
   geom_count(aes(y = lat, x = lon), 
              stroke = 0,
-             color = "steelblue",
+             color = "#29af7f",
              alpha = 0.7, show.legend = TRUE) +
   theme_light(base_size = 10) + 
   labs(
@@ -119,7 +119,7 @@ g2.1 <- d_mast %>%
   ggplot(aes(x = forcats::fct_reorder2(as.factor(ID), -whole_x_max, whole_x_min, .desc = TRUE))) + 
   geom_segment(
     aes(y = whole_x_min, yend = whole_x_max, group = ID),
-    color = "steelblue",
+    color = "#29af7f",
     linewidth = 0.1
   ) + 
   scale_x_discrete(breaks = NULL) + 

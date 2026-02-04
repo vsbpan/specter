@@ -120,7 +120,7 @@ hypothesis_draws(mast_m1, mast_m2, mast_m3, mast_m4,
     interval_size_range = c(0.3, 0.8), 
     show.legend = FALSE
   ) +
-  scale_fill_manual(values = c("#4682B4CC", "#4682B433")) + 
+  scale_fill_manual(values = c("#29af7f", "#29af7f4d")) + 
   scale_color_manual(values = c("black", "grey")) + 
   scale_x_discrete(label = scales::label_parse()) + 
   coord_flip() + 
@@ -170,7 +170,7 @@ prepare_newdata(mast_m1, "x_median_offset_scale", n = 10)$x_median_offset_scale 
       ),
     aes(x = x_median_offset, y = y, group = ID),
     alpha = 0.1,
-    color = "steelblue",
+    color = "#29af7f",
     linewidth = 0.5
   ) +
   geom_ribbon(

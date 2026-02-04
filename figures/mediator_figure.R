@@ -25,7 +25,7 @@ list.files("rds_files", full.names = TRUE, pattern = "m5") %>%
 #   coord_flip() 
 
 auto_plot <- function(model, term, response, raw_term = gsub("_scale", "", term), 
-                group, df, term_sd_df, x_lab = term, annotate = "foo"){
+                group, df, term_sd_df, x_lab = term, annotate = "foo", col2 = "steelblue", hyp_lab = "foo"){
   df$x__ <- df[[raw_term]]
   df$group__ <- df[[group]]
   df$y__ <- df[[response]]
@@ -66,7 +66,7 @@ auto_plot <- function(model, term, response, raw_term = gsub("_scale", "", term)
         ),
       aes(x = x__, y = y, group = group__),
       alpha = 0.1,
-      color = "steelblue",
+      color = col2,
       linewidth = 0.5
     ) +
     geom_ribbon(
@@ -78,6 +78,8 @@ auto_plot <- function(model, term, response, raw_term = gsub("_scale", "", term)
     ) + 
     annotation_custom(grid::textGrob(annotate, 0.025, 0.95, just = "left", 
                                      gp = grid::gpar(fontsize = 8))) +  
+    annotation_custom(grid::textGrob(hyp_lab, 1 - 0.025, 0.95, just = "right", 
+                                     gp = grid::gpar(fontsize = 8))) + 
     labs(x = x_lab, y = "% change in frequency") + 
     theme_bw(base_size = 9)
 }
@@ -89,7 +91,8 @@ g0 <- auto_plot(GPDD_m5,
                 df = d_GPDD2, 
                 term_sd_df = d_GPDD,
                 x_lab = tex("Change in log min. density (ln(dens.))"),
-                annotate = "Population density")
+                annotate = "Population density", 
+                hyp_lab = "(iv)")
 
 g1 <- auto_plot(GPDD_m5, 
                 term = "inv_temp_offset_scale", 
@@ -98,7 +101,8 @@ g1 <- auto_plot(GPDD_m5,
                 df = d_GPDD2, 
                 term_sd_df = d_GPDD,
                 x_lab = tex("Change in inverse temp. ($K^{-1}$)"),
-                annotate = "Population density") + 
+                annotate = "Population density",
+                hyp_lab = "(ii)") + 
   scale_x_continuous(labels = fancy_scientific) +
   annotation_custom(grid::textGrob("warmer", 0.025, 1 - 0.95, just = "left", 
                                    gp = grid::gpar(fontsize = 8, col = "grey"))) +
@@ -112,7 +116,8 @@ g2 <- auto_plot(GPDD_m5,
                 df = d_GPDD2, 
                 term_sd_df = d_GPDD,
                 x_lab = tex("Change in log temp. freq. (ln($year^{-1}$))"),
-                annotate = "Population density")
+                annotate = "Population density",
+                hyp_lab = "(iii)")
 
 g3 <- auto_plot(GPDD_m5, 
                 term = "estimate.r_offset_scale", 
@@ -121,7 +126,8 @@ g3 <- auto_plot(GPDD_m5,
                 df = d_GPDD2, 
                 term_sd_df = d_GPDD,
                 x_lab = tex("Change in growth rate ($year^{-1}$)"),
-                annotate = "Population density")
+                annotate = "Population density",
+                hyp_lab = "(i)")
 
 g4 <- auto_plot(mast_m5, 
                 term = "inv_temp_offset_scale", 
@@ -130,7 +136,9 @@ g4 <- auto_plot(mast_m5,
                 df = d_mast2, 
                 term_sd_df = d_mast,
                 x_lab = tex("Change in inverse temp. ($K^{-1}$)"),
-                annotate = "Masting density") + 
+                annotate = "Masting density",
+                col2 = "#29af7f",
+                hyp_lab = "(ii)") + 
   scale_x_continuous(labels = fancy_scientific) + 
   annotation_custom(grid::textGrob("warmer", 0.025, 1 - 0.95, just = "left", 
                                    gp = grid::gpar(fontsize = 8, col = "grey"))) +
@@ -144,7 +152,9 @@ g5 <- auto_plot(mast_m5,
                 df = d_mast2, 
                 term_sd_df = d_mast,
                 x_lab = tex("Change in log temp. freq. (ln($year^{-1}$))"),
-                annotate = "Masting density")
+                annotate = "Masting density",
+                col2 = "#29af7f",
+                hyp_lab = "(iii)")
 
 
 
@@ -196,7 +206,7 @@ compute_mediation(GPDD_m5,
   ) -> mediator_df
 
 
-foo <- function(mediator_df, annotate){
+foo <- function(mediator_df, annotate, fill_vals = c("#4682B433","#4682B4CC")){
   mediator_df %>% 
     mutate(
       beta = (exp(beta * 10) - 1) * 100,
@@ -214,7 +224,7 @@ foo <- function(mediator_df, annotate){
       stroke = 0.3, interval_size_range = c(0.3, 0.8), 
       show.legend = FALSE
     ) +
-    scale_fill_manual(values = c("#4682B433","#4682B4CC")) + 
+    scale_fill_manual(values = fill_vals) + 
     scale_color_manual(values = c("grey","black")) + 
     coord_flip() + 
     theme_bw(base_size = 9) + 
@@ -237,7 +247,8 @@ foo(mediator_df %>%
 
 foo(mediator_df %>% 
       filter(type == "Masting density"),
-    "Masting density") -> g7;g7
+    "Masting density", 
+    fill_vals = rev(c("#29af7f", "#29af7f4d"))) -> g7;g7
 
 
 
